@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -46,6 +47,7 @@ import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
 import org.jgrapht.graph.DefaultEdge;
 
 import com.mxgraph.layout.mxOrganicLayout;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.util.mxMorphing;
 import com.mxgraph.util.mxCellRenderer;
@@ -662,6 +664,48 @@ public class DecomposableModel {
 	 *            the names of the variables
 	 */
 	public void exportBNNetica(File file, String[] variableNames,String [][]outcomes) {
+		
+		mxGraph xGraph = new mxGraph();
+		Object parent = xGraph.getDefaultParent();
+		xGraph.getModel().beginUpdate();
+		
+		HashMap<Integer,mxCell> cells = new HashMap<Integer, mxCell>();
+		try {
+			for (Integer i : graph.vertexSet()) {
+				if (variableNames != null) {
+					cells.put(i, (mxCell) xGraph.insertVertex(parent, null,
+							variableNames[i], 0, 0, 100, 30));
+				} else {
+					cells.put(i,(mxCell) xGraph.insertVertex(parent, null, "" + i, 0,
+							0, 100, 30));
+				}
+			}
+			for (DefaultEdge edge : graph.edgeSet()) {
+				xGraph.insertEdge(parent, null, "",
+						cells.get(graph.getEdgeSource(edge)),
+						cells.get(graph.getEdgeTarget(edge)),
+						"startArrow=none;endArrow=none;");
+			}
+	
+		} finally {
+			xGraph.getModel().endUpdate();
+		}
+	
+		// define layout
+		mxOrganicLayout layout = new mxOrganicLayout(xGraph);
+		layout.setFineTuning(true);
+		layout.setOptimizeEdgeCrossing(true);
+		layout.setOptimizeNodeDistribution(true);
+		layout.setOptimizeEdgeLength(false);
+		layout.setMaxIterations(1000);
+	
+		xGraph.getModel().beginUpdate();
+		try {
+			layout.execute(xGraph.getDefaultParent());
+		} finally {
+			xGraph.getModel().endUpdate();
+		}
+		
 		try {
 			PrintWriter out = new PrintWriter(new FileOutputStream(file), true);
 			out.println("// ~->[DNET-1]->~");
@@ -702,8 +746,21 @@ public class DecomposableModel {
 				}
 				out.println("\t};");
 				out.println();
-
+				
+				//layout
+				out.print("\tvisual ");
+				out.print("v" + varIndex);
+				out.println("{");
+				double x = cells.get(varIndex).getGeometry().getX();
+				double y = cells.get(varIndex).getGeometry().getY();
+				double w = cells.get(varIndex).getGeometry().getWidth();
+				double h = cells.get(varIndex).getGeometry().getHeight();
+				out.println("\twindowpos = ("+w+","+h+","+x+","+y+")");
+				out.println(");");
+				
+				
 			}
+			
 			out.println("};");
 
 			out.close();

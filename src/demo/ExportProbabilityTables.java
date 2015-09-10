@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2014 Francois Petitjean
+ * Copyright (C) 2015 Francois Petitjean
  * 
  * This file is part of Chordalysis.
  * 
@@ -32,90 +32,120 @@ import java.util.List;
 import lattice.Lattice;
 import lattice.LatticeNode;
 import model.DecomposableModel;
-import model.Inference;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 import explorer.ChordalysisModelling;
 
-public class ExampleMLE {
+public class ExportProbabilityTables {
 
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException {
-		
-		CSVLoader loader = new CSVLoader();
-		System.out.println("Downloading dataset...");
-		URL oracle = new URL("http://repository.seasr.org/Datasets/UCI/csv/mushroom.csv");
-		File csvFile = File.createTempFile("data-", ".csv");
-        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
-        PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(csvFile))); 
-	    String inputLine;
-	    while ((inputLine = in.readLine()) != null){
-	            out.println(inputLine);
-	    }
-	    in.close();
-	    out.close();
-	    System.out.println("Dataset written to: "+csvFile.getAbsolutePath());
-		
-		loader.setFile(csvFile);
-		loader.setNominalAttributes("first-last");
-		Instances instances = loader.getDataSet();
-		String[] variablesNames = new String[instances.numAttributes()];
-		String [][]outcomes = new String[instances.numAttributes()][];
-		for (int i = 0; i < variablesNames.length; i++) {
-			variablesNames[i] = instances.attribute(i).name();
-			outcomes[i] = new String[instances.attribute(i).numValues()+1];//+1 for missing
-			for (int j = 0; j < outcomes[i].length-1; j++) {
-				outcomes[i][j]=instances.attribute(i).value(j);
-			}
-			outcomes[i][outcomes[i].length-1]="missing";
-			System.out.println("Dom("+variablesNames[i]+") = "+Arrays.toString(outcomes[i]));
-			
-			
-		}
-		
-		ChordalysisModelling modeller = new ChordalysisModelling(0.05);
-		
-		System.out.println("Learning...");
-		modeller.buildModel(instances);
-		DecomposableModel bestModel = modeller.getModel();
-//		bestModel.display(variablesNames);
-		System.out.println("The model selected is:");
-		System.out.println(bestModel.toString(variablesNames));
+    /**
+     * @param args
+     * @throws IOException
+     */
+    public static void main(String[] args) throws IOException {
 
-		Lattice lattice = modeller.getLattice();
-		
-		List<BitSet> cliques = bestModel.getCliquesBFS();
-		for(BitSet clique: cliques){
-			LatticeNode node = lattice.getNode(clique);
-			int[] variableNumbers = node.getVariablesNumbers();
-			System.out.print("clique: [");
-			for (int i = 0; i < variableNumbers.length; i++) {
-				System.out.print(variablesNames[variableNumbers[i]]+" ");
-			}
-			System.out.println("]");
-			
-			int nCombinations = node.getNbCells();
-			for (int combination = 0; combination < nCombinations; combination++) {
-				int[] indexes = node.getIndexes(combination);
-				
-				System.out.print("\tp(");
-				for (int var = 0; var < variableNumbers.length; var++) {
-					System.out.print(variablesNames[variableNumbers[var]]+"=");
-					System.out.print(outcomes[variableNumbers[var]][indexes[var]]);
-					if(var<variableNumbers.length-1){
-						System.out.print(",");
-					}
-				}
-				int count = node.getMatrixCell(combination);
-				double p = (1.0+count)/(lattice.getNbInstances()+nCombinations);
-				System.out.println(") = "+p);
-			}
-			System.out.println();
-			
-		}
-		
+	CSVLoader loader = new CSVLoader();
+	System.out.println("Downloading dataset...");
+	URL oracle = new URL("http://repository.seasr.org/Datasets/UCI/csv/mushroom.csv");
+	File csvFile = File.createTempFile("data-", ".csv");
+	BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+	PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(csvFile)));
+	String inputLine;
+	while ((inputLine = in.readLine()) != null) {
+	    out.println(inputLine);
 	}
+	in.close();
+	out.close();
+	System.out.println("Dataset written to: " + csvFile.getAbsolutePath());
+
+	loader.setFile(csvFile);
+	loader.setNominalAttributes("first-last");
+	Instances instances = loader.getDataSet();
+	String[] variablesNames = new String[instances.numAttributes()];
+	String[][] outcomes = new String[instances.numAttributes()][];
+	for (int i = 0; i < variablesNames.length; i++) {
+	    variablesNames[i] = instances.attribute(i).name();
+	    outcomes[i] = new String[instances.attribute(i).numValues() + 1];// +1
+									     // for
+									     // missing
+	    for (int j = 0; j < outcomes[i].length - 1; j++) {
+		outcomes[i][j] = instances.attribute(i).value(j);
+	    }
+	    outcomes[i][outcomes[i].length - 1] = "missing";
+	    System.out.println("Dom(" + variablesNames[i] + ") = " + Arrays.toString(outcomes[i]));
+
+	}
+
+	ChordalysisModelling modeller = new ChordalysisModelling(0.05);
+
+	System.out.println("Learning...");
+	modeller.buildModel(instances);
+	DecomposableModel bestModel = modeller.getModel();
+	// bestModel.display(variablesNames);
+	System.out.println("The model selected is:");
+	System.out.println(bestModel.toString(variablesNames));
+
+	Lattice lattice = modeller.getLattice();
+
+	List<BitSet> cliques = bestModel.getCliquesBFS();
+	for (BitSet clique : cliques) {
+	    LatticeNode node = lattice.getNode(clique);
+	    int[] variableNumbers = node.getVariablesNumbers();
+	    System.out.print("clique: [");
+	    for (int i = 0; i < variableNumbers.length; i++) {
+		System.out.print(variablesNames[variableNumbers[i]] + " ");
+	    }
+	    System.out.println("]");
+
+	    int nCombinations = node.getNbCells();
+	    for (int combination = 0; combination < nCombinations; combination++) {
+		int[] indexes = node.getIndexes(combination);
+
+		System.out.print("\tp(");
+		for (int var = 0; var < variableNumbers.length; var++) {
+		    System.out.print(variablesNames[variableNumbers[var]] + "=");
+		    System.out.print(outcomes[variableNumbers[var]][indexes[var]]);
+		    if (var < variableNumbers.length - 1) {
+			System.out.print(",");
+		    }
+		}
+		int count = node.getMatrixCell(combination);
+		double p = (1.0 + count) / (lattice.getNbInstances() + nCombinations);
+		System.out.println(") = " + p);
+	    }
+	    System.out.println();
+
+	}
+
+	List<BitSet> separators = bestModel.getSeparators();
+	for (BitSet clique : separators) {
+	    LatticeNode node = lattice.getNode(clique);
+	    int[] variableNumbers = node.getVariablesNumbers();
+	    System.out.print("separator: [");
+	    for (int i = 0; i < variableNumbers.length; i++) {
+		System.out.print(variablesNames[variableNumbers[i]] + " ");
+	    }
+	    System.out.println("]");
+
+	    int nCombinations = node.getNbCells();
+	    for (int combination = 0; combination < nCombinations; combination++) {
+		int[] indexes = node.getIndexes(combination);
+
+		System.out.print("\tp(");
+		for (int var = 0; var < variableNumbers.length; var++) {
+		    System.out.print(variablesNames[variableNumbers[var]] + "=");
+		    System.out.print(outcomes[variableNumbers[var]][indexes[var]]);
+		    if (var < variableNumbers.length - 1) {
+			System.out.print(",");
+		    }
+		}
+		int count = node.getMatrixCell(combination);
+		double p = (1.0 + count) / (lattice.getNbInstances() + nCombinations);
+		System.out.println(") = " + p);
+	    }
+	    System.out.println();
+
+	}
+
+    }
 }
