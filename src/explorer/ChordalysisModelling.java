@@ -49,6 +49,11 @@ public class ChordalysisModelling{
 	MyPriorityQueue pq;
 	GraphActionScorer scorer;
 	
+	boolean hasMissingValues = true;
+	public void setHasMissingValues(boolean hasMissingValues){
+	    this.hasMissingValues = hasMissingValues;
+	}
+	
 	int maxNSteps = Integer.MAX_VALUE;
 	public void setMaxNSteps(int nSteps){
 		this.maxNSteps = nSteps;
@@ -88,9 +93,13 @@ public class ChordalysisModelling{
 		int[] nbValuesForAttribute = new int[variables.length];
 		for (int i = 0; i < variables.length; i++) {
 			variables[i] = i;
-			nbValuesForAttribute[i] = dataset.numDistinctValues(i);
+			if(hasMissingValues){
+			    nbValuesForAttribute[i] = dataset.attribute(i).numValues()+1;
+			}else{
+			    nbValuesForAttribute[i] = dataset.attribute(i).numValues()+1;
+			}
 		}
-		this.lattice = new Lattice(dataset);
+		this.lattice = new Lattice(dataset,false);
 		this.entropyComputer = new EntropyComputer(dataset.numInstances(), this.lattice);
 		this.scorer = new GraphActionScorerPValue(nbInstances, entropyComputer);
 		this.bestModel = new DecomposableModel(variables, nbValuesForAttribute);

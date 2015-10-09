@@ -43,54 +43,16 @@ public class Lattice {
 	 * @param dataset
 	 */
 	public Lattice(Instances dataset) {
-
-		// ~ initialise internal structure for counting (TID sets)
-		this.nbInstances = dataset.numInstances();
-		this.nbVariables = dataset.numAttributes();
-
-		BitSet[][] presence = new BitSet[nbVariables][];
-
-		TreeSet<Integer> allAttributesNumbers = new TreeSet<Integer>();
-		int[] nbValuesForAttribute = new int[nbVariables];
-		for (int a = 0; a < nbVariables; a++) {
-			nbValuesForAttribute[a] = dataset.numDistinctValues(a)+1; //+1 for missing
-			presence[a] = new BitSet[nbValuesForAttribute[a]];
-			allAttributesNumbers.add(a);
-			for (int v = 0; v < presence[a].length; v++) {
-				presence[a][v] = new BitSet();
-			}
-		}
-
-		for (int i = 0; i < nbInstances; i++) {
-			Instance row = dataset.instance(i);
-			for (int a = 0; a < nbVariables; a++) {
-
-				int indexOfValue;
-				if (row.isMissing(a)) {
-//					indexOfValue = (int) dataset.meanOrMode(a);
-					indexOfValue = dataset.numDistinctValues(a); //missing at the end
-				} else {
-					String value = row.stringValue(a);
-					indexOfValue = row.attribute(a).indexOfValue(value);
-				}
-				presence[a][indexOfValue].set(i);
-
-			}
-		}
-
-		// initialise the first nodes of the lattice (i.e., the ones
-		// corresponding to single variables
-		this.all = new LatticeNode(this, nbValuesForAttribute);
-		this.singleNodes = new LatticeNode[nbVariables];
-		for (int a = 0; a < nbVariables; a++) {
-			int[] variablesNumbers = { a };
-			LatticeNode node = new LatticeNode(this,
-					variablesNumbers, nbValuesForAttribute,
-					presence[a], all);
-			singleNodes[a] = node;
-		}
-		
-
+	    init(dataset, true);
+	}
+	
+	/**
+	 * Constructor of a lattice over the given variables of the dataset.
+	 * 
+	 * @param dataset
+	 */
+	public Lattice(Instances dataset,boolean hasMissingValues) {
+	    init(dataset, hasMissingValues);
 	}
 	
 	public Lattice(BitSet[][] presence,int nbInstances) {
@@ -119,6 +81,70 @@ public class Lattice {
 	}
 
 	public Lattice(Instances structure, ArffReader loader) throws IOException {
+		init(structure,loader,true);
+	}
+	
+	public Lattice(Instances structure, ArffReader loader,boolean hasMissingValues) throws IOException {
+		init(structure,loader,hasMissingValues);
+	}
+	
+	protected void init(Instances dataset, boolean missingAsAdditionalValue) {
+		// ~ initialise internal structure for counting (TID sets)
+		this.nbInstances = dataset.numInstances();
+		this.nbVariables = dataset.numAttributes();
+
+		BitSet[][] presence = new BitSet[nbVariables][];
+
+		TreeSet<Integer> allAttributesNumbers = new TreeSet<Integer>();
+		int[] nbValuesForAttribute = new int[nbVariables];
+		for (int a = 0; a < nbVariables; a++) {
+		    if (missingAsAdditionalValue) {
+			nbValuesForAttribute[a] = dataset.attribute(a).numValues() + 1; // +1
+			// for
+			// missing
+		    } else {
+			nbValuesForAttribute[a] = dataset.attribute(a).numValues();
+		    }
+		    presence[a] = new BitSet[nbValuesForAttribute[a]];
+		    allAttributesNumbers.add(a);
+		    for (int v = 0; v < presence[a].length; v++) {
+			presence[a][v] = new BitSet();
+		    }
+		}
+
+		for (int i = 0; i < nbInstances; i++) {
+		    Instance row = dataset.instance(i);
+		    for (int a = 0; a < nbVariables; a++) {
+			int indexOfValue;
+			if (row.isMissing(a)) {
+			    if (missingAsAdditionalValue) {
+				// missing at the end
+				indexOfValue = dataset.numDistinctValues(a);
+			    } else {
+				indexOfValue = (int) dataset.meanOrMode(a);
+			    }
+			} else {
+			    String value = row.stringValue(a);
+			    indexOfValue = row.attribute(a).indexOfValue(value);
+			}
+			presence[a][indexOfValue].set(i);
+
+		    }
+		}
+
+		// initialise the first nodes of the lattice (i.e., the ones
+		// corresponding to single variables
+		this.all = new LatticeNode(this, nbValuesForAttribute);
+		this.singleNodes = new LatticeNode[nbVariables];
+		for (int a = 0; a < nbVariables; a++) {
+		    int[] variablesNumbers = { a };
+		    LatticeNode node = new LatticeNode(this, variablesNumbers, nbValuesForAttribute,
+			    presence[a], all);
+		    singleNodes[a] = node;
+		}
+	    }
+	
+	protected void init(Instances structure, ArffReader loader, boolean hasMissingValues) throws IOException {
 		// ~ initialise internal structure for counting (TID sets)
 		this.nbInstances = 0;
 		this.nbVariables = structure.numAttributes();
@@ -128,43 +154,54 @@ public class Lattice {
 		TreeSet<Integer> allAttributesNumbers = new TreeSet<Integer>();
 		int[] nbValuesForAttribute = new int[nbVariables];
 		for (int a = 0; a < nbVariables; a++) {
-			nbValuesForAttribute[a] = structure.numDistinctValues(a)+1;//+1 for missing
-			presence[a] = new BitSet[nbValuesForAttribute[a]];
-			allAttributesNumbers.add(a);
-			for (int v = 0; v < presence[a].length; v++) {
-				presence[a][v] = new BitSet();
-			}
+		    if (hasMissingValues) {
+			nbValuesForAttribute[a] = structure.attribute(a).numValues() + 1;
+		    } else {
+			nbValuesForAttribute[a] = structure.attribute(a).numValues();
+		    }
+		    presence[a] = new BitSet[nbValuesForAttribute[a]];
+		    allAttributesNumbers.add(a);
+		    for (int v = 0; v < presence[a].length; v++) {
+			presence[a][v] = new BitSet();
+		    }
 		}
 
 		Instance row;
 		while ((row = loader.readInstance(structure)) != null) {
-			for (int a = 0; a < nbVariables; a++) {
-				int indexOfValue;
-				if (row.isMissing(a)) {
-					indexOfValue = structure.numDistinctValues(a);//missing at the end
-				} else {
-					String value = row.stringValue(a);
-					indexOfValue = row.attribute(a).indexOfValue(value);
-				}
-				presence[a][indexOfValue].set(this.nbInstances);
-
+		    boolean skipRow = false;
+		    for (int a = 0; a < nbVariables; a++) {
+			int indexOfValue;
+			if (row.isMissing(a)) {
+			    if (hasMissingValues) {
+				indexOfValue = structure.attribute(a).numValues() ;
+			    } else {
+				System.err.println("Found missing while I was told I wouldn't; ignoring whole row");
+				skipRow = true;
+				break;
+			    }
+			} else {
+			    String value = row.stringValue(a);
+			    indexOfValue = row.attribute(a).indexOfValue(value);
 			}
+			presence[a][indexOfValue].set(this.nbInstances);
+
+		    }
+		    if (!skipRow) {
 			this.nbInstances++;
+		    }
 		}
-			
 
 		// initialise the first nodes of the lattice (i.e., the ones
 		// corresponding to single variables
 		this.all = new LatticeNode(this, nbValuesForAttribute);
 		this.singleNodes = new LatticeNode[nbVariables];
 		for (int a = 0; a < nbVariables; a++) {
-			int[] variablesNumbers = { a };
-			LatticeNode node = new LatticeNode(this,
-					variablesNumbers, nbValuesForAttribute,
-					presence[a], all);
-			singleNodes[a] = node;
+		    int[] variablesNumbers = { a };
+		    LatticeNode node = new LatticeNode(this, variablesNumbers, nbValuesForAttribute,
+			    presence[a], all);
+		    singleNodes[a] = node;
 		}
-	}
+	    }
 
 	/**
 	 * Get a node of the lattice from its integer set representation (e.g.,

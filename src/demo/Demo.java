@@ -66,7 +66,6 @@ public class Demo {
 		System.out.println("Learning...");
 		modeller.buildModel(instances);
 		DecomposableModel bestModel = modeller.getModel();
-		bestModel.display(variablesNames);
 		System.out.println("The model selected is:");
 		System.out.println(bestModel.toString(variablesNames));
 		bestModel.display(variablesNames);
