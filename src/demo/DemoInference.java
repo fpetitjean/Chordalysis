@@ -43,7 +43,7 @@ public class DemoInference {
 		
 		CSVLoader loader = new CSVLoader();
 		System.out.println("Downloading dataset...");
-		URL oracle = new URL("http://repository.seasr.org/Datasets/UCI/csv/mushroom.csv");
+		URL oracle = new URL("https://www.dropbox.com/s/ulny2gir336asxd/mush-demo.csv?dl=1");
 		File csvFile = File.createTempFile("data-", ".csv");
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
         PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(csvFile))); 
@@ -58,6 +58,7 @@ public class DemoInference {
 		loader.setFile(csvFile);
 		loader.setNominalAttributes("first-last");
 		Instances instances = loader.getDataSet();
+		System.out.println(instances.toSummaryString());
 		String[] variablesNames = new String[instances.numAttributes()];
 		String [][]outcomes = new String[instances.numAttributes()][];
 		for (int i = 0; i < variablesNames.length; i++) {
@@ -87,7 +88,7 @@ public class DemoInference {
 		System.out.println("initial beliefs on "+targetVariable+" "+ Arrays.toString(inference.getBelief(targetVariable)));
 		
 		System.out.println("adding evidence poisonous and convex shape");
-		inference.addEvidence("class", "e");
+		inference.addEvidence("edible", "e");
 		inference.addEvidence("cap-shape", "x");
 		inference.recordEvidence();
 		
