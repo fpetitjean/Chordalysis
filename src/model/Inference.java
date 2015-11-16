@@ -224,7 +224,6 @@ public class Inference {
 	
 	public double[]getBelief(String nodeName){
 		Integer nodeID = nodeIDFromName.get(nodeName);
-		System.out.println(nodeID);
 		if(nodeID==null){
 			System.err.println("Cannot find a node named '"+nodeName+"'.");
 			return null;
