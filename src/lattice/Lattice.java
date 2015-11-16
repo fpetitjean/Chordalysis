@@ -119,7 +119,7 @@ public class Lattice {
 			if (row.isMissing(a)) {
 			    if (missingAsAdditionalValue) {
 				// missing at the end
-				indexOfValue = dataset.numDistinctValues(a);
+				indexOfValue = dataset.attribute(a).numValues();
 			    } else {
 				indexOfValue = (int) dataset.meanOrMode(a);
 			    }
