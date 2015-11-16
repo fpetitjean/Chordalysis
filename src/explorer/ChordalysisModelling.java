@@ -96,10 +96,10 @@ public class ChordalysisModelling{
 			if(hasMissingValues){
 			    nbValuesForAttribute[i] = dataset.attribute(i).numValues()+1;
 			}else{
-			    nbValuesForAttribute[i] = dataset.attribute(i).numValues()+1;
+			    nbValuesForAttribute[i] = dataset.attribute(i).numValues();
 			}
 		}
-		this.lattice = new Lattice(dataset,false);
+		this.lattice = new Lattice(dataset,hasMissingValues);
 		this.entropyComputer = new EntropyComputer(dataset.numInstances(), this.lattice);
 		this.scorer = new GraphActionScorerPValue(nbInstances, entropyComputer);
 		this.bestModel = new DecomposableModel(variables, nbValuesForAttribute);
@@ -132,7 +132,7 @@ public class ChordalysisModelling{
 		int[] nbValuesForAttribute = new int[variables.length];
 		for (int i = 0; i < variables.length; i++) {
 			variables[i] = i;
-			nbValuesForAttribute[i] = dataset.numDistinctValues(i);
+			nbValuesForAttribute[i] = dataset.attribute(i).numValues();
 		}
 		this.lattice = new Lattice(dataset,loader);
 		this.nbInstances = this.lattice.getNbInstances();
