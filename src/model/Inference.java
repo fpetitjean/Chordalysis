@@ -37,205 +37,348 @@ import org.jgrapht.graph.DefaultEdge;
 @SuppressWarnings("deprecation")
 public class Inference {
 
-	private DirectedAcyclicGraph<Integer, DefaultEdge> bn;
-	private BayesNet jbn;
-	private Map<Integer, BayesNode> jnodes;
-	private Map<Integer, String> nodeNames;
-	private Map<String,Integer > nodeIDFromName;
-	private Map<BayesNode, Integer> nodesNumber;
-	private IBayesInferer inferer;
-	Map<BayesNode, String> evidence;
+    private DirectedAcyclicGraph<Integer, DefaultEdge> bn;
+    private BayesNet jbn;
+    private Map<Integer, BayesNode> jnodes;
+    private Map<Integer, String> nodeNames;
+    private Map<String, Integer> nodeIDFromName;
+    private Map<BayesNode, Integer> nodesNumber;
+    private IBayesInferer inferer;
+    Map<BayesNode, String> evidence;
 
-	public Inference(DecomposableModel model, String[] variableNames, String[][] outcomes) {
+    public Inference(DecomposableModel model, String[] variableNames, String[][] outcomes) {
 
-		try {
-			this.bn = model.getBayesianNetwork();
-		} catch (CycleFoundException e) {
-			e.printStackTrace();
+	try {
+	    this.bn = model.getBayesianNetwork();
+	} catch (CycleFoundException e) {
+	    e.printStackTrace();
+	}
+
+	this.jnodes = new HashMap<Integer, BayesNode>();
+	this.nodesNumber = new HashMap<BayesNode, Integer>();
+	this.nodeNames = new HashMap<Integer, String>();
+	this.nodeIDFromName = new HashMap<String, Integer>();
+	this.jbn = new BayesNet();
+	for (Integer nodeID : bn.vertexSet()) {
+	    String name = variableNames[nodeID];
+	    BayesNode node = jbn.createNode(name);
+	    node.addOutcomes(outcomes[nodeID]);
+
+	    nodeNames.put(nodeID, name);
+	    nodeIDFromName.put(name, nodeID);
+	    nodesNumber.put(node, nodeID);
+	    jnodes.put(nodeID, node);
+	}
+
+	for (Integer nodeID : bn.vertexSet()) {
+	    BayesNode node = jnodes.get(nodeID);
+	    ArrayList<BayesNode> parents = new ArrayList<BayesNode>();
+	    for (DefaultEdge e : bn.edgesOf(nodeID)) {
+		if (bn.getEdgeTarget(e) == nodeID) {
+		    BayesNode oneParent = jnodes.get(bn.getEdgeSource(e));
+		    parents.add(oneParent);
+		}
+	    }
+	    if (!parents.isEmpty()) {
+		node.setParents(parents);
+	    }
+	}
+    }
+
+    public void setProbabilities(Lattice lattice) {
+
+	for (Integer nodeID : jnodes.keySet()) {
+	    BayesNode n = jnodes.get(nodeID);
+	    // System.out.println("setting CPT for "+n.getName());
+	    List<BayesNode> parents = n.getParents();
+	    List<BayesNode> parentsAndChild = new ArrayList<BayesNode>(parents);
+	    parentsAndChild.add(n);
+
+	    int nbParents = parents.size();
+	    // System.out.println(nbParents+" parents");
+	    // System.out.print("numbers for jayes =[");
+	    // for (int i = 0; i < parentsAndChild.size(); i++) {
+	    // BayesNode nodeTmp = parentsAndChild.get(i);
+	    // System.out.print(nodesNumber.get(nodeTmp)+",");
+	    // }
+	    // System.out.println("]");
+
+	    BitSet numbers = new BitSet();
+	    numbers.set(nodeID);
+
+	    int[] sizes = new int[nbParents];
+	    int nbRowsInCPT = 1;
+	    for (int i = 0; i < parents.size(); i++) {
+		BayesNode parent = parents.get(i);
+		numbers.set(nodesNumber.get(parent));
+		sizes[i] = parents.get(i).getOutcomeCount();
+		nbRowsInCPT *= sizes[i];
+	    }
+
+	    LatticeNode latticeNode = lattice.getNode(numbers);
+	    Map<Integer, Integer> fromNodeIDToPositionInSortedTable = new HashMap<Integer, Integer>();
+
+	    Integer[] variablesNumbers = new Integer[numbers.cardinality()];
+	    int current = 0;
+	    for (int i = numbers.nextSetBit(0); i >= 0; i = numbers.nextSetBit(i + 1)) {
+		variablesNumbers[current] = i;
+		current++;
+	    }
+	    for (int i = 0; i < variablesNumbers.length; i++) {
+		fromNodeIDToPositionInSortedTable.put(variablesNumbers[i], i);
+	    }
+
+	    int[] counts = new int[nbRowsInCPT * n.getOutcomeCount()];
+	    int[] indexes4lattice = new int[parentsAndChild.size()];
+	    int[] indexes4Jayes = new int[parentsAndChild.size()];
+	    // System.out.println(counts.length +" cases");
+	    // System.out.println("numbers for lattice "+Arrays.toString(variablesNumbers));
+
+	    for (int c = 0; c < counts.length; c++) {
+		// System.out.println("case "+c);
+		int index = c;
+		// find indexes
+		for (int i = indexes4Jayes.length - 1; i > 0; i--) {
+		    BayesNode associatedNode = parentsAndChild.get(i);
+		    int dim = associatedNode.getOutcomeCount();
+		    indexes4Jayes[i] = index % dim;
+		    index /= dim;
+		}
+		indexes4Jayes[0] = index;
+
+		// System.out.println("indexes jayes = "+Arrays.toString(indexes4Jayes));
+
+		for (int i = 0; i < indexes4Jayes.length; i++) {
+		    BayesNode nodeInPositionI = parentsAndChild.get(i);
+		    // System.out.println(nodeInPositionI);
+		    // System.out.println(fromNodeIDToPositionInSortedTable);
+		    int nodeInPositionIID = nodesNumber.get(nodeInPositionI);
+		    int indexInSortedTable = fromNodeIDToPositionInSortedTable
+			    .get(nodeInPositionIID);
+		    indexes4lattice[indexInSortedTable] = indexes4Jayes[i];
 		}
 
-		this.jnodes = new HashMap<Integer, BayesNode>();
-		this.nodesNumber = new HashMap<BayesNode, Integer>();
-		this.nodeNames = new HashMap<Integer, String>();
-		this.nodeIDFromName = new HashMap<String, Integer>();
-		this.jbn = new BayesNet();
-		for (Integer nodeID : bn.vertexSet()) {
-			String name = variableNames[nodeID];
-			BayesNode node = jbn.createNode(name);
-			node.addOutcomes(outcomes[nodeID]);
+		// System.out.println("indexes lattice = "+Arrays.toString(indexes4lattice));
 
-			nodeNames.put(nodeID, name);
-			nodeIDFromName.put(name, nodeID);
-			nodesNumber.put(node, nodeID);
-			jnodes.put(nodeID, node);
+		int count = latticeNode.getMatrixCell(indexes4lattice);
+		counts[c] = count;
+	    }
+	    // System.out.println(Arrays.toString(counts));
+	    // System.out.println("total="+sumAllCounts);
+
+	    double mTerm = 0.5;
+	    double[] probas1D = new double[n.getOutcomeCount() * nbRowsInCPT];
+	    for (int s = 0; s < probas1D.length; s += n.getOutcomeCount()) {
+
+		double sumOfCounts = 0.0;
+		for (int j = 0; j < n.getOutcomeCount(); j++) {
+		    sumOfCounts += counts[s + j] + mTerm;
 		}
 
-		for (Integer nodeID : bn.vertexSet()) {
-			BayesNode node = jnodes.get(nodeID);
-			ArrayList<BayesNode> parents = new ArrayList<BayesNode>();
-			for (DefaultEdge e : bn.edgesOf(nodeID)) {
-				if (bn.getEdgeTarget(e) == nodeID) {
-					BayesNode oneParent = jnodes.get(bn.getEdgeSource(e));
-					parents.add(oneParent);
-				}
-			}
-			if (!parents.isEmpty()) {
-				node.setParents(parents);
-			}
+		for (int j = 0; j < n.getOutcomeCount(); j++) {
+		    probas1D[s + j] = (counts[s + j] + mTerm) / sumOfCounts;
 		}
+	    }
+	    // System.out.println(Arrays.toString(probas1D));
+	    n.setProbabilities(probas1D);
+
 	}
 
-	public void setProbabilities(Lattice lattice) {
+	System.out.println("Compiling network for inference...");
+	inferer = new JunctionTreeAlgorithm();
+	inferer.setNetwork(jbn);
+	evidence = new HashMap<BayesNode, String>();
+	System.out.println("Compiled.");
+    }
 
-		for (Integer nodeID : jnodes.keySet()) {
-			BayesNode n = jnodes.get(nodeID);
-//			System.out.println("setting CPT for "+n.getName());
-			List<BayesNode> parents = n.getParents();
-			List<BayesNode> parentsAndChild = new ArrayList<BayesNode>(parents);
-			parentsAndChild.add(n);
-			
-			int nbParents = parents.size();
-//			System.out.println(nbParents+" parents");
-//			System.out.print("numbers for jayes =[");
-//			for (int i = 0; i < parentsAndChild.size(); i++) {
-//				BayesNode nodeTmp = parentsAndChild.get(i);
-//				System.out.print(nodesNumber.get(nodeTmp)+",");
-//			}
-//			System.out.println("]");
-			
-			
+    public void addEvidence(int nodeID, String outcome) {
+	addEvidence(jnodes.get(nodeID), outcome);
+    }
 
-			BitSet numbers = new BitSet();
-			numbers.set(nodeID);
+    public void addEvidence(String nodeName, String outcome) {
+	addEvidence(jnodes.get(nodeIDFromName.get(nodeName)), outcome);
+    }
 
-			int[] sizes = new int[nbParents];
-			int nbRowsInCPT = 1;
-			for (int i = 0; i < parents.size(); i++) {
-				BayesNode parent = parents.get(i);
-				numbers.set(nodesNumber.get(parent));
-				sizes[i] = parents.get(i).getOutcomeCount();
-				nbRowsInCPT *= sizes[i];
-			}
+    protected void addEvidence(BayesNode node, String outcome) {
+	evidence.put(node, outcome);
+    }
 
-			LatticeNode latticeNode = lattice.getNode(numbers);
-			Map<Integer, Integer> fromNodeIDToPositionInSortedTable = new HashMap<Integer, Integer>();
-			
-			Integer[] variablesNumbers = new Integer[numbers.cardinality()];
-			int current =0;
-			for (int i = numbers.nextSetBit(0); i >= 0; i = numbers.nextSetBit(i+1)) {
-				variablesNumbers[current]=i;
-				current++;
-			}
-			for (int i = 0; i < variablesNumbers.length; i++) {
-				fromNodeIDToPositionInSortedTable.put(variablesNumbers[i], i);
-			}
+    public void recordEvidence() {
+	inferer.setEvidence(evidence);
+    }
 
-			int[] counts = new int[nbRowsInCPT * n.getOutcomeCount()];
-			int[] indexes4lattice = new int[parentsAndChild.size()];
-			int[] indexes4Jayes = new int[parentsAndChild.size()];
-//			System.out.println(counts.length +" cases");
-//			System.out.println("numbers for lattice "+Arrays.toString(variablesNumbers));
-			
-			for (int c = 0; c < counts.length; c++) {
-//				System.out.println("case "+c);
-				int index = c;
-				// find indexes
-				for (int i = indexes4Jayes.length - 1; i > 0; i--) {
-					BayesNode associatedNode = parentsAndChild.get(i);
-					int dim = associatedNode.getOutcomeCount();
-					indexes4Jayes[i] = index % dim;
-					index /= dim;
-				}
-				indexes4Jayes[0] = index;
-				
-				
-//				System.out.println("indexes jayes = "+Arrays.toString(indexes4Jayes));
-				
-				for (int i = 0; i < indexes4Jayes.length; i++) {
-					BayesNode nodeInPositionI = parentsAndChild.get(i);
-//					System.out.println(nodeInPositionI);
-//					System.out.println(fromNodeIDToPositionInSortedTable);
-					int nodeInPositionIID = nodesNumber.get(nodeInPositionI);
-					int indexInSortedTable = fromNodeIDToPositionInSortedTable.get(nodeInPositionIID);
-					indexes4lattice[indexInSortedTable]=indexes4Jayes[i];
-				}
-				
-//				System.out.println("indexes lattice = "+Arrays.toString(indexes4lattice));
+    public void clearEvidences() {
+	evidence = new HashMap<BayesNode, String>();
+	inferer.setEvidence(evidence);
+    }
 
-				int count = latticeNode.getMatrixCell(indexes4lattice);
-				counts[c] = count;
-			}
-//			System.out.println(Arrays.toString(counts));
-//			System.out.println("total="+sumAllCounts);
+    public double[] getBelief(int nodeID) {
+	return getBelief(jnodes.get(nodeID));
+    }
 
-			double mTerm = 0.5;
-			double[] probas1D = new double[n.getOutcomeCount() * nbRowsInCPT];
-			for (int s = 0; s < probas1D.length; s += n.getOutcomeCount()) {
+    public double[] getBelief(BayesNode n) {
+	return inferer.getBeliefs(n);
+    }
 
-				double sumOfCounts = 0.0;
-				for (int j = 0; j < n.getOutcomeCount(); j++) {
-					sumOfCounts += counts[s + j]+mTerm;
-				}
+    public double[] getBelief(String nodeName) {
+	Integer nodeID = nodeIDFromName.get(nodeName);
+	if (nodeID == null) {
+	    System.err.println("Cannot find a node named '" + nodeName + "'.");
+	    return null;
+	}
+	BayesNode node = jnodes.get(nodeID);
+	if (node == null) {
+	    System.err.println("Cannot find a node named '" + nodeName + "'.");
+	    return null;
+	}
 
-				for (int j = 0; j < n.getOutcomeCount(); j++) {
-					probas1D[s + j] = (counts[s + j] + mTerm) / sumOfCounts;
-				}
-			}
-//			System.out.println(Arrays.toString(probas1D));
-			n.setProbabilities(probas1D);
+	return getBelief(node);
+    }
 
+    public void printDSC(Lattice lattice) {
+	System.out.println("belief network \"net\"");
+	for (Integer nodeID : jnodes.keySet()) {
+	    BayesNode n = jnodes.get(nodeID);
+	    System.out.print("node " + n.getName() + " {\n" + "\ttype : discrete [ "
+		    + n.getOutcomeCount() + " ] = { ");
+	    System.out.print(n.getOutcomeName(0));
+	    for (int i = 1; i < n.getOutcomeCount(); i++) {
+		System.out.print(",\"" + n.getOutcomeName(i) + "\"");
+	    }
+	    System.out.println("},\n}");
+	    // System.out.println("setting CPT for "+n.getName());
+	    List<BayesNode> parents = n.getParents();
+	    List<BayesNode> parentsAndChild = new ArrayList<BayesNode>(parents);
+	    parentsAndChild.add(n);
+	}
+
+	for (Integer nodeID : jnodes.keySet()) {
+	    BayesNode n = jnodes.get(nodeID);
+	    List<BayesNode> parents = n.getParents();
+	    List<BayesNode> parentsAndChild = new ArrayList<BayesNode>(parents);
+	    parentsAndChild.add(n);
+
+	    System.out.print("probability ( " + n.getName());
+	    if (!parents.isEmpty()) {
+		System.out.print(" | " + parents.get(0).getName());
+		for (int p = 1; p < parents.size(); p++) {
+		    System.out.print(" , " + parents.get(p).getName());
+		}
+		System.out.println(" ) {");
+	    }
+
+	    int nbParents = parents.size();
+
+	    BitSet numbers = new BitSet();
+	    numbers.set(nodeID);
+
+	    int[] sizes = new int[nbParents];
+	    int nbRowsInCPT = 1;
+	    for (int i = 0; i < parents.size(); i++) {
+		BayesNode parent = parents.get(i);
+		numbers.set(nodesNumber.get(parent));
+		sizes[i] = parents.get(i).getOutcomeCount();
+		nbRowsInCPT *= sizes[i];
+	    }
+
+	    LatticeNode latticeNode = lattice.getNode(numbers);
+	    Map<Integer, Integer> fromNodeIDToPositionInSortedTable = new HashMap<Integer, Integer>();
+
+	    Integer[] variablesNumbers = new Integer[numbers.cardinality()];
+	    int current = 0;
+	    for (int i = numbers.nextSetBit(0); i >= 0; i = numbers.nextSetBit(i + 1)) {
+		variablesNumbers[current] = i;
+		current++;
+	    }
+	    for (int i = 0; i < variablesNumbers.length; i++) {
+		fromNodeIDToPositionInSortedTable.put(variablesNumbers[i], i);
+	    }
+
+	    int[] counts = new int[nbRowsInCPT * n.getOutcomeCount()];
+	    int[] indexes4lattice = new int[parentsAndChild.size()];
+	    int[] indexes4Jayes = new int[parentsAndChild.size()];
+	    // System.out.println(counts.length +" cases");
+	    // System.out.println("numbers for lattice "+Arrays.toString(variablesNumbers));
+
+	    for (int c = 0; c < counts.length; c++) {
+		// System.out.println("case "+c);
+		int index = c;
+		// find indexes
+		for (int i = indexes4Jayes.length - 1; i > 0; i--) {
+		    BayesNode associatedNode = parentsAndChild.get(i);
+		    int dim = associatedNode.getOutcomeCount();
+		    indexes4Jayes[i] = index % dim;
+		    index /= dim;
+		}
+		indexes4Jayes[0] = index;
+
+		for (int i = 0; i < indexes4Jayes.length; i++) {
+		    BayesNode nodeInPositionI = parentsAndChild.get(i);
+		    // System.out.println(nodeInPositionI);
+		    // System.out.println(fromNodeIDToPositionInSortedTable);
+		    int nodeInPositionIID = nodesNumber.get(nodeInPositionI);
+		    int indexInSortedTable = fromNodeIDToPositionInSortedTable
+			    .get(nodeInPositionIID);
+		    indexes4lattice[indexInSortedTable] = indexes4Jayes[i];
 		}
 
-		System.out.println("Compiling network for inference...");
-		inferer = new JunctionTreeAlgorithm();
-		inferer.setNetwork(jbn);
-		evidence = new HashMap<BayesNode, String>();
-		System.out.println("Compiled.");
-	}
+		// System.out.println("indexes lattice = "+Arrays.toString(indexes4lattice));
 
-	public void addEvidence(int nodeID, String outcome) {
-		addEvidence(jnodes.get(nodeID), outcome);
-	}
-	
-	public void addEvidence(String nodeName, String outcome) {
-		addEvidence(jnodes.get(nodeIDFromName.get(nodeName)), outcome);
-	}
-	
-	protected void addEvidence(BayesNode node, String outcome) {
-		evidence.put(node, outcome);
-	}
-	
-	public void recordEvidence(){
-		inferer.setEvidence(evidence);
-	}
-	
-	public void clearEvidences(){
-		evidence = new HashMap<BayesNode, String>();
-		inferer.setEvidence(evidence);
-	}
-	
-	public double[]getBelief(int nodeID){
-		return getBelief(jnodes.get(nodeID));
-	}
-	
-	public double[]getBelief(BayesNode n){
-		return inferer.getBeliefs(n);
-	}
-	
-	public double[]getBelief(String nodeName){
-		Integer nodeID = nodeIDFromName.get(nodeName);
-		if(nodeID==null){
-			System.err.println("Cannot find a node named '"+nodeName+"'.");
-			return null;
+		int count = latticeNode.getMatrixCell(indexes4lattice);
+		counts[c] = count;
+	    }
+	    // System.out.println(Arrays.toString(counts));
+	    // System.out.println("total="+sumAllCounts);
+
+	    double mTerm = 0.5;
+	    if (parents.isEmpty()) {
+		double sumOfCounts = 0.0;
+		for (int j = 0; j < n.getOutcomeCount(); j++) {
+		    sumOfCounts += counts[j] + mTerm;
 		}
-		BayesNode node = jnodes.get(nodeID);
-		if(node==null){
-			System.err.println("Cannot find a node named '"+nodeName+"'.");
-			return null;
+		double p = (counts[0] + mTerm) / sumOfCounts;
+		System.out.print("\ttable " + p);
+		for (int j = 1; j < n.getOutcomeCount(); j++) {
+		    p = (counts[j] + mTerm) / sumOfCounts;
+		    System.out.print(", " + p);
 		}
-		
-		return getBelief(node);
+		System.out.println(";");
+	    } else {
+		int[] indexes4Parents = new int[parents.size()];
+		for (int r = 0; r < nbRowsInCPT; r++) {
+		    int index = r;
+		    // find indexes
+		    for (int i = indexes4Parents.length - 1; i > 0; i--) {
+			BayesNode associatedNode = parents.get(i);
+			int dim = associatedNode.getOutcomeCount();
+			indexes4Parents[i] = index % dim;
+			index /= dim;
+		    }
+		    indexes4Parents[0] = index;
+		    System.out.print("\t(" + indexes4Parents[0]);
+		    for (int p = 1; p < indexes4Parents.length; p++) {
+			System.out.print("," + indexes4Parents[p]);
+		    }
+		    System.out.print("): ");
+
+		    double sumOfCounts = 0.0;
+		    for (int j = 0; j < n.getOutcomeCount(); j++) {
+			sumOfCounts += counts[r * n.getOutcomeCount() + j] + mTerm;
+		    }
+
+		    double p = (counts[r * n.getOutcomeCount() + 0] + mTerm) / sumOfCounts;
+		    System.out.print(p);
+		    for (int j = 1; j < n.getOutcomeCount(); j++) {
+			p = (counts[r * n.getOutcomeCount() + j] + mTerm) / sumOfCounts;
+			System.out.print(", " + p);
+		    }
+		    System.out.println(";");
+
+		}
+	    }
+
+	    System.out.println("}");
 	}
-	
+    }
 
 }
