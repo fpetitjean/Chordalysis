@@ -17,6 +17,11 @@
  ******************************************************************************/
 package model;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -235,17 +240,18 @@ public class Inference {
 	return getBelief(node);
     }
 
-    public void printDSC(Lattice lattice) {
-	System.out.println("belief network \"net\"");
+    public void exportDSC(File file, Lattice lattice) throws FileNotFoundException {
+	PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)));
+	out.println("belief network \"net\"");
 	for (Integer nodeID : jnodes.keySet()) {
 	    BayesNode n = jnodes.get(nodeID);
-	    System.out.print("node " + n.getName() + " {\n" + "\ttype : discrete [ "
+	    out.print("node " + n.getName() + " {\n" + "\ttype : discrete [ "
 		    + n.getOutcomeCount() + " ] = { ");
-	    System.out.print(n.getOutcomeName(0));
+	    out.print("\""+n.getOutcomeName(0)+"\"");
 	    for (int i = 1; i < n.getOutcomeCount(); i++) {
-		System.out.print(",\"" + n.getOutcomeName(i) + "\"");
+		out.print(",\"" + n.getOutcomeName(i) + "\"");
 	    }
-	    System.out.println("},\n}");
+	    out.println("},\n}");
 	    // System.out.println("setting CPT for "+n.getName());
 	    List<BayesNode> parents = n.getParents();
 	    List<BayesNode> parentsAndChild = new ArrayList<BayesNode>(parents);
@@ -258,14 +264,14 @@ public class Inference {
 	    List<BayesNode> parentsAndChild = new ArrayList<BayesNode>(parents);
 	    parentsAndChild.add(n);
 
-	    System.out.print("probability ( " + n.getName());
+	    out.print("probability ( " + n.getName());
 	    if (!parents.isEmpty()) {
-		System.out.print(" | " + parents.get(0).getName());
+		out.print(" | " + parents.get(0).getName());
 		for (int p = 1; p < parents.size(); p++) {
-		    System.out.print(" , " + parents.get(p).getName());
+		    out.print(" , " + parents.get(p).getName());
 		}
-		System.out.println(" ) {");
 	    }
+	    out.println(" ) {");
 
 	    int nbParents = parents.size();
 
@@ -337,12 +343,12 @@ public class Inference {
 		    sumOfCounts += counts[j] + mTerm;
 		}
 		double p = (counts[0] + mTerm) / sumOfCounts;
-		System.out.print("\ttable " + p);
+		out.print("\t " + p);
 		for (int j = 1; j < n.getOutcomeCount(); j++) {
 		    p = (counts[j] + mTerm) / sumOfCounts;
-		    System.out.print(", " + p);
+		    out.print(", " + p);
 		}
-		System.out.println(";");
+		out.println(";");
 	    } else {
 		int[] indexes4Parents = new int[parents.size()];
 		for (int r = 0; r < nbRowsInCPT; r++) {
@@ -355,11 +361,11 @@ public class Inference {
 			index /= dim;
 		    }
 		    indexes4Parents[0] = index;
-		    System.out.print("\t(" + indexes4Parents[0]);
+		    out.print("\t(" + indexes4Parents[0]);
 		    for (int p = 1; p < indexes4Parents.length; p++) {
-			System.out.print("," + indexes4Parents[p]);
+			out.print("," + indexes4Parents[p]);
 		    }
-		    System.out.print("): ");
+		    out.print("): ");
 
 		    double sumOfCounts = 0.0;
 		    for (int j = 0; j < n.getOutcomeCount(); j++) {
@@ -367,18 +373,19 @@ public class Inference {
 		    }
 
 		    double p = (counts[r * n.getOutcomeCount() + 0] + mTerm) / sumOfCounts;
-		    System.out.print(p);
+		    out.print(p);
 		    for (int j = 1; j < n.getOutcomeCount(); j++) {
 			p = (counts[r * n.getOutcomeCount() + j] + mTerm) / sumOfCounts;
-			System.out.print(", " + p);
+			out.print(", " + p);
 		    }
-		    System.out.println(";");
+		    out.println(";");
 
 		}
 	    }
-
-	    System.out.println("}");
+	    out.println("}");
 	}
+	out.flush();
+	out.close();
     }
 
 }

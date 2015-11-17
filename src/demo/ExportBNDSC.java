@@ -84,7 +84,10 @@ public class ExportBNDSC {
 	DecomposableModel bestModel = modeller.getModel();
 	
 	Inference inference = new Inference(bestModel, variablesNames, outcomes);
-	inference.printDSC(modeller.getLattice());
+	File dsc = File.createTempFile("test-", ".dsc");
+	inference.exportDSC(dsc,modeller.getLattice());
+	System.out.println(".dsc file written to "+dsc.getAbsolutePath());
+	
 	
     }
 }
