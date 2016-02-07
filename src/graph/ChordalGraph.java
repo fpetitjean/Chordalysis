@@ -17,6 +17,10 @@
  ******************************************************************************/
 package graph;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -840,6 +844,38 @@ public class ChordalGraph extends SimpleGraph<Integer, DefaultEdge> implements U
 			System.out.println(peo);
 			return peo;
 		}
+	}
+	
+	public void exportDOT(File file) {
+
+		try {
+			PrintWriter out = new PrintWriter(new FileOutputStream(file), true);
+
+			out.println("graph Chordalysis{");
+			out.println("\tgraph [K=1.0 fontsize=14 overlap=\"10:\" splines=\"true\"];");
+			out.println("\tratio = auto;");
+			ArrayList<Integer> listNodes = new ArrayList<Integer>(vertexSet());
+
+			for (int i = 0; i < listNodes.size(); i++) {
+				Integer node = listNodes.get(i);
+				out.print("\t\"" + node + "\"");
+				out.print(" [shape=\"ellipse\" ");
+				double fontSize;
+				fontSize = 10.0;
+				out.print("fontsize=" + fontSize + " ");
+				out.println("];");
+			}
+
+			for (DefaultEdge edge : edgeSet()) {
+				out.println(getEdgeSource(edge) + "--" + getEdgeTarget(edge));
+			}
+			out.println("}");
+
+			out.close();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
 	}
 
 }
