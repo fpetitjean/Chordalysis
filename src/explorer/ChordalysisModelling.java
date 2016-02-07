@@ -35,7 +35,7 @@ import weka.core.converters.ArffLoader.ArffReader;
  * This class searches a statistically significant decomposable model to explain a dataset using Prioritized Chordalysis. 
  * See paper "Scaling log-linear analysis to high-dimensional data, ICDM 2013"
  * See paper "Scaling log-linear analysis to datasets with thousands of variables, SDM 2015"
- * @see http://www.tiny-clues.eu/Research/
+ * @see http://www.francois-petitjean.com/Research/
  */
 public class ChordalysisModelling{
 
@@ -166,7 +166,7 @@ public class ChordalysisModelling{
 			double correctedPValueThreshold = (pValueThreshold / Math.pow(2, step)) / nbTests;
 
 			ScoredGraphAction todo = pq.poll();
-			if (todo.getScore()>= correctedPValueThreshold) {
+			if (todo.getScore()> correctedPValueThreshold) {
 				break;
 			}
 			operationsPerformed.add(todo);

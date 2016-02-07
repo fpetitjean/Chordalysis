@@ -18,9 +18,6 @@
 
 package model;
 
-import graph.ChordalGraph;
-import graph.CliqueGraphEdge;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -39,8 +36,6 @@ import java.util.TreeSet;
 
 import javax.swing.JFrame;
 
-import model.GraphAction.ActionType;
-
 import org.apache.commons.math3.util.FastMath;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
@@ -56,6 +51,9 @@ import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraph;
 
+import graph.ChordalGraph;
+import graph.CliqueGraphEdge;
+import model.GraphAction.ActionType;
 import stats.EntropyComputer;
 import stats.MessageLengthFactorialComputer;
 import stats.MyPriorityQueue;
@@ -450,6 +448,38 @@ public class DecomposableModel {
 		return nbParameters;
 
 	}
+	
+	
+	public double getMessageLength(MessageLengthFactorialComputer computer) {
+		double length = 0.0;
+		List<BitSet> cliques = graph.getCliquesBFS();
+		List<BitSet> separators = graph.getSeparatorsBFS();
+
+		for (BitSet clique : cliques) {
+		    int tmpNParam = 1;
+		    for (int var = clique.nextSetBit(0); var >= 0; var = clique.nextSetBit(var + 1)) {
+			tmpNParam *= dimensionsForVariables[var];
+		    }
+		    tmpNParam = tmpNParam - 1;
+		    // freqs
+		    length += tmpNParam * computer.getLogFromTable(computer.getNbInstances() + 1);
+		    // position in dataset
+		    length += computer.computeLengthData(clique);
+		}
+
+		for (BitSet separator : separators) {
+		    int tmpNParam = 1;
+		    for (int var = separator.nextSetBit(0); var >= 0; var = separator.nextSetBit(var + 1)) {
+			tmpNParam *= dimensionsForVariables[var];
+		    }
+		    tmpNParam = tmpNParam - 1;
+		    // freqs
+		    length -= tmpNParam * computer.getLogFromTable(computer.getNbInstances() + 1);
+		    // position in dataset
+		    length -= computer.computeLengthData(separator);
+		}
+		return length;
+	    }
 
 	@Override
 	public String toString() {
