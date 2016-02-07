@@ -791,7 +791,7 @@ public class ChordalGraph extends SimpleGraph<Integer, DefaultEdge> implements U
 	 * @return a possible elimination ordering on the graph.
 	 */
 	@SuppressWarnings("unchecked")
-	protected final ArrayList<Integer> getEliminationOrdering() {
+	public final ArrayList<Integer> getEliminationOrdering() {
 		if (peo != null) {
 			return peo;
 		} else {
