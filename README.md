@@ -5,8 +5,8 @@ More information about the research papers detailing the theory behind Chordalys
 # Preamble
 
 This code is supporting 3 research papers:
-* SDM 2015: *Scaling log-linear analysis to datasets with thousands of variables* (Best paper award honourable mention)
-* ICDM 2014: *A statistically efficient and scalable method for log-linear analysis of high-dimensional data* (Nominated for Best paper award)
+* SDM 2015: *Scaling log-linear analysis to datasets with thousands of variables*
+* ICDM 2014: *A statistically efficient and scalable method for log-linear analysis of high-dimensional data*
 * ICDM 2013: *Scaling log-linear analysis to high-dimensional data*
 
 When using this repository, please cite:
