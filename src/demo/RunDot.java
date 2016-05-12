@@ -19,10 +19,10 @@ package demo;
 import java.io.File;
 import java.io.IOException;
 
+import explorer.ChordalysisModellingSMT;
 import model.DecomposableModel;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import explorer.ChordalysisModelling;
 /**
  * This class launches Chordalysis and export the results as a .dot file for GraphViz
  *
@@ -75,7 +75,7 @@ public class RunDot {
 			}
 			long start = System.currentTimeMillis();
 			
-			ChordalysisModelling modeller = new ChordalysisModelling(pValue);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
 			modeller.buildModel(instances);
 			DecomposableModel bestModel = modeller.getModel();
 

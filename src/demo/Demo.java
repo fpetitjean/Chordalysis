@@ -26,10 +26,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
 
+import explorer.ChordalysisModellingSMT;
 import model.DecomposableModel;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import explorer.ChordalysisModelling;
 
 public class Demo {
 
@@ -61,7 +61,7 @@ public class Demo {
 			variablesNames[i] = instances.attribute(i).name();
 		}
 		
-		ChordalysisModelling modeller = new ChordalysisModelling(0.05);
+		ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(0.05);
 		
 		System.out.println("Learning...");
 		modeller.buildModel(instances);

@@ -24,10 +24,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import explorer.ChordalysisModellingSMT;
 import model.DecomposableModel;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import explorer.ChordalysisModelling;
 
 public class RunGUI {
 
@@ -63,7 +63,7 @@ public class RunGUI {
 				variablesNames[i] = instances.attribute(i).name();
 			}
 			
-			ChordalysisModelling modeller = new ChordalysisModelling(pValue);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
 			modeller.buildModel(instances);
 			DecomposableModel bestModel = modeller.getModel();
 			System.out.println("The model selected is:");

@@ -29,12 +29,12 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import explorer.ChordalysisModellingSMT;
 import lattice.Lattice;
 import lattice.LatticeNode;
 import model.DecomposableModel;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import explorer.ChordalysisModelling;
 
 public class ExportProbabilityTables {
 
@@ -76,7 +76,7 @@ public class ExportProbabilityTables {
 
 	}
 
-	ChordalysisModelling modeller = new ChordalysisModelling(0.05);
+	ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(0.05);
 
 	System.out.println("Learning...");
 	modeller.buildModel(instances);

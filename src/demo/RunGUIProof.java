@@ -26,13 +26,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import explorer.ChordalysisModellingSMT;
 import model.DecomposableModel;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Discretize;
-import explorer.ChordalysisModelling;
 
 public class RunGUIProof {
 	
@@ -143,7 +143,7 @@ public class RunGUIProof {
 				}
 			}
 
-			ChordalysisModelling modeller = new ChordalysisModelling(pValue);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
 			modeller.buildModel(instances);
 			DecomposableModel bestModel = modeller.getModel();
 			JOptionPane.showMessageDialog(null,new JTextArea("Chordalysis has now finished analysing your data. "
