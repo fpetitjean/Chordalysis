@@ -11,6 +11,14 @@ This code is supporting 3 research papers:
 
 When using this repository, please cite:
 ```
+@INPROCEEDINGS{Petitjean2016-KDD,
+  author = {Webb, Geoffrey I. and Petitjean, Francois},
+  title = {A multiple test correction for streams and cascades of statistical hypothesis tests},
+  booktitle = {ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+  year = 2016,
+  pages = {1--10}
+}
+
 @INPROCEEDINGS{Petitjean2015-SDM,
   author = {Petitjean, Francois and Webb, Geoffrey I.},
   title = {Scaling log-linear analysis to datasets with thousands of variables},
