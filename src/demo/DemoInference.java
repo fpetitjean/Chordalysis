@@ -27,11 +27,11 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Arrays;
 
+import explorer.ChordalysisModellingSMT;
 import model.DecomposableModel;
 import model.Inference;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import explorer.ChordalysisModelling;
 
 public class DemoInference {
 
@@ -73,7 +73,7 @@ public class DemoInference {
 			
 		}
 		
-		ChordalysisModelling modeller = new ChordalysisModelling(0.05);
+		ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(0.05);
 		
 		System.out.println("Learning...");
 		modeller.buildModel(instances);

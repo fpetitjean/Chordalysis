@@ -21,10 +21,10 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import explorer.ChordalysisModellingSMT;
 import model.DecomposableModel;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
-import explorer.ChordalysisModelling;
 /**
  * This class launches Chordalysis with a GUI
  *
@@ -92,7 +92,7 @@ public class Run {
 			}
 			long start = System.currentTimeMillis();
 			
-			ChordalysisModelling modeller = new ChordalysisModelling(pValue);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
 			modeller.buildModel(instances);
 			DecomposableModel bestModel = modeller.getModel();
 
