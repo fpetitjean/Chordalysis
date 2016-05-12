@@ -36,7 +36,9 @@ import weka.core.converters.ArffLoader.ArffReader;
  * See paper "Scaling log-linear analysis to high-dimensional data, ICDM 2013"
  * See paper "Scaling log-linear analysis to datasets with thousands of variables, SDM 2015"
  * @see http://www.francois-petitjean.com/Research/
+ * Note that this is superseeded by {@link ChordalysisModellingBudget} with budget {@link ChordalysisModellingBudget#budgetShare}=0.5
  */
+@Deprecated
 public class ChordalysisModelling{
 
 	int nbInstances;
