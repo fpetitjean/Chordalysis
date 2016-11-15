@@ -23,7 +23,7 @@ import model.GraphAction;
 import model.ScoredGraphAction;
 
 public abstract class GraphActionScorer {
-	
+	int nbInstances;
 	public abstract ScoredGraphAction scoreEdge(DecomposableModel model,GraphAction action);
 	
 }

@@ -26,7 +26,7 @@ import model.PValueScoredGraphAction;
 import model.ScoredGraphAction;
 
 public class GraphActionScorerPValue extends GraphActionScorer {
-	int nbInstances;
+	
 	EntropyComputer entropyComputer;
 	public GraphActionScorerPValue(int nbInstances,EntropyComputer entropyComputer){
 		this.nbInstances = nbInstances;

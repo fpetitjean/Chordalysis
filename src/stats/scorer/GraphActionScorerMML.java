@@ -23,7 +23,7 @@ import model.ScoredGraphAction;
 import stats.MessageLengthFactorialComputer;
 
 public class GraphActionScorerMML extends GraphActionScorer {
-	int nbInstances;
+	
 	MessageLengthFactorialComputer computer;
 	public GraphActionScorerMML(int nbInstances,MessageLengthFactorialComputer computer){
 		this.nbInstances = nbInstances;
