@@ -79,6 +79,48 @@ public class Lattice {
 		}
 
 	}
+	
+	/**
+	 * Constructor for the R package
+	 * @param nValuesForAttribute number of values per attribute
+	 * @param data (first dim is line no, second is variable number, content is value no for variable k in [0,nValuesForAttribute[k])
+	 */
+	public Lattice(int []nValuesForAttribute,int[][]data) {
+
+		// ~ initialise internal structure for counting (TID sets)
+		this.nbInstances = data.length;
+		this.nbVariables = nValuesForAttribute.length;
+
+		// initialise the first nodes of the lattice (i.e., the ones
+		// corresponding to single variables
+		this.all = new LatticeNode(this, nValuesForAttribute);
+		this.singleNodes = new LatticeNode[nbVariables];
+		
+		BitSet[][] convData = new BitSet[nbVariables][];
+		
+		for (int a = 0; a < nbVariables; a++) {
+			convData[a] = new BitSet[nValuesForAttribute[a]];
+			for (int v = 0; v < convData[a].length; v++) {
+				convData[a][v]=new BitSet(nbInstances);
+			}
+		}
+		
+		for (int i = 0; i < nbInstances; i++) {
+			for (int a = 0; a < nbVariables; a++) {
+				int[] sample = data[i];
+				convData[a][sample[a]].set(i);
+			}
+		}
+		
+		for (int a = 0; a < nbVariables; a++) {
+			int[] variablesNumbers = { a };
+			LatticeNode node = new LatticeNode(this,
+					variablesNumbers, nValuesForAttribute,
+					convData[a], all);
+			singleNodes[a] = node;
+		}
+
+	}
 
 	public Lattice(Instances structure, ArffReader loader) throws IOException {
 		init(structure,loader,true);
