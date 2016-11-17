@@ -23,11 +23,8 @@ import java.util.ArrayList;
 import lattice.Lattice;
 import model.DecomposableModel;
 import model.GraphAction;
-import model.ScoredGraphAction;
-import stats.EntropyComputer;
 import stats.MyPriorityQueue;
 import stats.scorer.GraphActionScorer;
-import stats.scorer.GraphActionScorerPValue;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader.ArffReader;
 
@@ -38,7 +35,6 @@ public abstract class ChordalysisModeller{
 
 	DecomposableModel bestModel;
 	protected Lattice lattice;
-	Instances dataset;
 	ArrayList<GraphAction> operationsPerformed;
 	MyPriorityQueue pq;
 	GraphActionScorer scorer;
@@ -77,7 +73,6 @@ public abstract class ChordalysisModeller{
 	}
 	
 	public void buildModelNoExplore(Instances dataset) {
-		this.dataset = dataset;
 		int[] variables = new int[dataset.numAttributes()];
 		int[] nbValuesForAttribute = new int[variables.length];
 		for (int i = 0; i < variables.length; i++) {
@@ -101,6 +96,28 @@ public abstract class ChordalysisModeller{
 
 	}
 	
+	/**
+	 * Initialising method for the R package
+	 * @param nValuesForAttribute
+	 * @param data
+	 * @see Lattice#Lattice(int[], int[][]) for format for arguments
+	 */
+	public void buildModelNoExplore(int[]nValuesForAttribute,int[][] data) {
+		int[] variables = new int[nValuesForAttribute.length];
+		for (int v = 0; v < variables.length; v++) {
+			variables[v] = v;
+		}
+		this.lattice = new Lattice(nValuesForAttribute,data);
+		this.scorer = initScorer();
+		this.bestModel = new DecomposableModel(variables, nValuesForAttribute);
+		this.pq = new MyPriorityQueue(variables.length, bestModel, scorer);
+		for (int i = 0; i < variables.length; i++) {
+			for (int j = i + 1; j < variables.length; j++) {
+				pq.enableEdge(i, j);
+			}
+		}
+	}
+	
 	protected abstract GraphActionScorer initScorer();
 
 	/**
@@ -117,7 +134,6 @@ public abstract class ChordalysisModeller{
 	}
 	
 	public void buildModelNoExplore(Instances structure,ArffReader loader) throws IOException {
-		this.dataset = structure;
 		int[] variables = new int[structure.numAttributes()];
 		int[] nbValuesForAttribute = new int[variables.length];
 		for (int i = 0; i < variables.length; i++) {
