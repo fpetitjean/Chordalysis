@@ -44,10 +44,41 @@ public class MessageLengthFactorialComputer {
 	int nbInstances;
 	double lnN;
 
+	@Deprecated
 	public MessageLengthFactorialComputer(int nbInstances, Lattice lattice) {
 		this.lookup = new HashMap<BitSet, Double>();
 		this.lattice = lattice;
 		this.nbInstances = nbInstances;
+
+		int nbFactorials = this.nbInstances + 2;
+		int nbVariables = lattice.getNbVariables();
+		int nbMaxEdges = nbVariables * (nbVariables - 1) / 2;
+		if (nbMaxEdges + 2 > nbFactorials) {
+			nbFactorials = nbMaxEdges + 3;
+		}
+
+		this.logs = new double[nbFactorials];
+		for (int i = 0; i < logs.length; i++) {
+			logs[i] = FastMath.log(i);
+		}
+		lnN = logs[nbInstances];
+
+		this.logFactorials = new double[nbFactorials];
+		logFactorials[0] = logs[1];
+		logFactorials[1] = logs[1];
+		for (int i = 2; i < logFactorials.length; i++) {
+			logFactorials[i] = logFactorials[i - 1] + logs[i];
+		}
+		nbCellsEverParsed = 0;
+
+		lookup.put(new BitSet(lattice.getNbVariables()), 0.0);
+
+	}
+	
+	public MessageLengthFactorialComputer(Lattice lattice) {
+		this.lookup = new HashMap<BitSet, Double>();
+		this.lattice = lattice;
+		this.nbInstances = this.lattice.getNbInstances();
 
 		int nbFactorials = this.nbInstances + 2;
 		int nbVariables = lattice.getNbVariables();

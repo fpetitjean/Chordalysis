@@ -39,29 +39,11 @@ import weka.core.converters.ArffLoader.ArffReader;
  * Note that this is superseeded by {@link ChordalysisModellingBudget} with budget {@link ChordalysisModellingBudget#budgetShare}=0.5
  */
 @Deprecated
-public class ChordalysisModelling{
+public class ChordalysisModelling extends ChordalysisModeller{
 
-	int nbInstances;
 	double pValueThreshold;
-	DecomposableModel bestModel;
 	EntropyComputer entropyComputer;
-	protected Lattice lattice;
-	Instances dataset;
-	ArrayList<GraphAction> operationsPerformed;
-	MyPriorityQueue pq;
-	GraphActionScorer scorer;
 	
-	boolean hasMissingValues = true;
-	public void setHasMissingValues(boolean hasMissingValues){
-	    this.hasMissingValues = hasMissingValues;
-	}
-	
-	int maxNSteps = Integer.MAX_VALUE;
-	public void setMaxNSteps(int nSteps){
-		this.maxNSteps = nSteps;
-		System.out.println(maxNSteps);
-	}
-
 	/**
 	 * Default constructor
 	 * 
@@ -69,97 +51,17 @@ public class ChordalysisModelling{
 	 *            minimum p-value for statistical consistency (commonly 0.05)
 	 */
 	public ChordalysisModelling(double pValueThreshold) {
+		super();
 		this.pValueThreshold = pValueThreshold;
-		operationsPerformed = new ArrayList<GraphAction>();
 	}
 
-	/**
-	 * Launch the modelling
-	 * 
-	 * @param dataset
-	 *            the dataset from which the analysis is performed on
-	 */
-	public void buildModel(Instances dataset) {
-		buildModelNoExplore(dataset);
-		this.explore();
-	}
-	
-	public int getNbInstances() {
-		return nbInstances;
-	}
-	
-	public void buildModelNoExplore(Instances dataset) {
-		this.nbInstances = dataset.numInstances();
-		this.dataset = dataset;
-		int[] variables = new int[dataset.numAttributes()];
-		int[] nbValuesForAttribute = new int[variables.length];
-		for (int i = 0; i < variables.length; i++) {
-			variables[i] = i;
-			if(hasMissingValues){
-			    nbValuesForAttribute[i] = dataset.attribute(i).numValues()+1;
-			}else{
-			    nbValuesForAttribute[i] = dataset.attribute(i).numValues();
-			}
-		}
-		this.lattice = new Lattice(dataset,hasMissingValues);
-		this.entropyComputer = new EntropyComputer(dataset.numInstances(), this.lattice);
-		this.scorer = new GraphActionScorerPValue(nbInstances, entropyComputer);
-		this.bestModel = new DecomposableModel(variables, nbValuesForAttribute);
-		this.pq = new MyPriorityQueue(variables.length, bestModel, scorer);
-		for (int i = 0; i < variables.length; i++) {
-			for (int j = i + 1; j < variables.length; j++) {
-				pq.enableEdge(i, j);
-			}
-		}
-		
-
-	}
-	
-	/**
-	 * Launch the modelling
-	 * 
-	 * @param dataset the structure of the dataset which the analysis is performed
-	 * @param 
-	 * @throws IOException 
-	 * 
-	 */
-	public void buildModel(Instances dataset,ArffReader loader) throws IOException {
-		buildModelNoExplore(dataset, loader);
-		this.explore();
-	}
-	
-	public void buildModelNoExplore(Instances dataset,ArffReader loader) throws IOException {
-		this.dataset = dataset;
-		int[] variables = new int[dataset.numAttributes()];
-		int[] nbValuesForAttribute = new int[variables.length];
-		for (int i = 0; i < variables.length; i++) {
-			variables[i] = i;
-			nbValuesForAttribute[i] = dataset.attribute(i).numValues();
-		}
-		this.lattice = new Lattice(dataset,loader);
-		this.nbInstances = this.lattice.getNbInstances();
-		
-		
-		this.entropyComputer = new EntropyComputer(nbInstances, this.lattice);
-		this.scorer = new GraphActionScorerPValue(nbInstances, entropyComputer);
-		this.bestModel = new DecomposableModel(variables, nbValuesForAttribute);
-		this.pq = new MyPriorityQueue(variables.length, bestModel, scorer);
-		for (int i = 0; i < variables.length; i++) {
-			for (int j = i + 1; j < variables.length; j++) {
-				pq.enableEdge(i, j);
-			}
-		}
-		
-
+	@Override
+	protected GraphActionScorer initScorer() {
+		EntropyComputer entropyComputer = new EntropyComputer(this.lattice);
+		return new GraphActionScorerPValue(entropyComputer);
 	}
 
-	/**
-	 * @return the Decomposable model that has been built
-	 */
-	public DecomposableModel getModel() {
-		return bestModel;
-	}
-
+	@Override
 	public void explore() {
 		pq.processStoredModifications();
 		int step=0;
@@ -175,10 +77,6 @@ public class ChordalysisModelling{
 			bestModel.performAction(todo, bestModel, pq);
 			step++;
 		}
-	}
-
-	public Lattice getLattice() {
-		return lattice;
 	}
 
 }

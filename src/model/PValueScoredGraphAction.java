@@ -26,11 +26,16 @@ package model;
 public class PValueScoredGraphAction extends ScoredGraphAction {
 	protected long nDF;
 	protected double entropy;
+	/**
+	 * This is only to be used for ChordalysisModellingSMTNoIntersection
+	 */
+	protected double associatedRisk;
 
 	public PValueScoredGraphAction(ActionType type, int v1, int v2, double score, long nDF, double entropy) {
 		super(type, v1, v2, score);
 		this.nDF = nDF;
 		this.entropy = entropy;
+		this.associatedRisk = 0.0;
 	}
 
 	public PValueScoredGraphAction(ActionType type, Couple<Integer> edge, double score, long nDF, double entropy) {
@@ -67,6 +72,14 @@ public class PValueScoredGraphAction extends ScoredGraphAction {
 	
 	public long getNDF(){
 		return nDF;
+	}
+	
+	public double getAssociatedRisk(){
+		return associatedRisk;
+	}
+	
+	public void setAssociatedRisk(double risk){
+		this.associatedRisk = risk;
 	}
 
 }

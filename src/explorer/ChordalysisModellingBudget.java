@@ -38,29 +38,11 @@ import weka.core.converters.ArffLoader.ArffReader;
  * See paper "A multiple test correction for streams and cascades of statistical hypothesis tests," KDD 2016
  * @see http://www.francois-petitjean.com/Research/
  */
-public class ChordalysisModellingBudget{
+public class ChordalysisModellingBudget extends ChordalysisModeller{
 
-	int nbInstances;
 	double pValueThreshold;
-	DecomposableModel bestModel;
-	EntropyComputer entropyComputer;
-	protected Lattice lattice;
-	Instances dataset;
-	ArrayList<GraphAction> operationsPerformed;
-	MyPriorityQueue pq;
-	GraphActionScorer scorer;
 	double budgetShare = 0.01;
 	
-	boolean hasMissingValues = true;
-	public void setHasMissingValues(boolean hasMissingValues){
-	    this.hasMissingValues = hasMissingValues;
-	}
-	
-	int maxNSteps = Integer.MAX_VALUE;
-	public void setMaxNSteps(int nSteps){
-		this.maxNSteps = nSteps;
-		System.out.println(maxNSteps);
-	}
 
 	/**
 	 * Default constructor
@@ -70,101 +52,21 @@ public class ChordalysisModellingBudget{
 	 *            @param budgetShare share of the statistical budget to consume at each step (>0 and <=1; 0.01 seems like a reasonable value for most datasets)
 	 */
 	public ChordalysisModellingBudget(double pValueThreshold,double budgetShare) {
+		super();
 		this.pValueThreshold = pValueThreshold;
 		this.budgetShare = budgetShare;
 		if(budgetShare<=0 || budgetShare>1){
 			throw new RuntimeException("budgetShare has to be within ]0,1]");
 		}
-		operationsPerformed = new ArrayList<GraphAction>();
 	}
 
-	/**
-	 * Launch the modelling
-	 * 
-	 * @param dataset
-	 *            the dataset from which the analysis is performed on
-	 */
-	public void buildModel(Instances dataset) {
-		buildModelNoExplore(dataset);
-		this.explore();
-	}
-	
-	public int getNbInstances() {
-		return nbInstances;
-	}
-	
-	public void buildModelNoExplore(Instances dataset) {
-		this.nbInstances = dataset.numInstances();
-		this.dataset = dataset;
-		int[] variables = new int[dataset.numAttributes()];
-		int[] nbValuesForAttribute = new int[variables.length];
-		for (int i = 0; i < variables.length; i++) {
-			variables[i] = i;
-			if(hasMissingValues){
-			    nbValuesForAttribute[i] = dataset.attribute(i).numValues()+1;
-			}else{
-			    nbValuesForAttribute[i] = dataset.attribute(i).numValues();
-			}
-		}
-		this.lattice = new Lattice(dataset,hasMissingValues);
-		this.entropyComputer = new EntropyComputer(dataset.numInstances(), this.lattice);
-		this.scorer = new GraphActionScorerPValue(nbInstances, entropyComputer);
-		this.bestModel = new DecomposableModel(variables, nbValuesForAttribute);
-		this.pq = new MyPriorityQueue(variables.length, bestModel, scorer);
-		for (int i = 0; i < variables.length; i++) {
-			for (int j = i + 1; j < variables.length; j++) {
-				pq.enableEdge(i, j);
-			}
-		}
-		
-
-	}
-	
-	/**
-	 * Launch the modelling
-	 * 
-	 * @param dataset the structure of the dataset which the analysis is performed
-	 * @param 
-	 * @throws IOException 
-	 * 
-	 */
-	public void buildModel(Instances dataset,ArffReader loader) throws IOException {
-		buildModelNoExplore(dataset, loader);
-		this.explore();
-	}
-	
-	public void buildModelNoExplore(Instances dataset,ArffReader loader) throws IOException {
-		this.dataset = dataset;
-		int[] variables = new int[dataset.numAttributes()];
-		int[] nbValuesForAttribute = new int[variables.length];
-		for (int i = 0; i < variables.length; i++) {
-			variables[i] = i;
-			nbValuesForAttribute[i] = dataset.attribute(i).numValues();
-		}
-		this.lattice = new Lattice(dataset,loader);
-		this.nbInstances = this.lattice.getNbInstances();
-		
-		
-		this.entropyComputer = new EntropyComputer(nbInstances, this.lattice);
-		this.scorer = new GraphActionScorerPValue(nbInstances, entropyComputer);
-		this.bestModel = new DecomposableModel(variables, nbValuesForAttribute);
-		this.pq = new MyPriorityQueue(variables.length, bestModel, scorer);
-		for (int i = 0; i < variables.length; i++) {
-			for (int j = i + 1; j < variables.length; j++) {
-				pq.enableEdge(i, j);
-			}
-		}
-		
-
+	@Override
+	protected GraphActionScorer initScorer() {
+		EntropyComputer entropyComputer = new EntropyComputer(this.lattice);
+		return new GraphActionScorerPValue(entropyComputer);
 	}
 
-	/**
-	 * @return the Decomposable model that has been built
-	 */
-	public DecomposableModel getModel() {
-		return bestModel;
-	}
-
+	@Override
 	public void explore() {
 	    pq.processStoredModifications();
 	    double remainingBudget = pValueThreshold;
@@ -185,10 +87,6 @@ public class ChordalysisModellingBudget{
 			bestModel.performAction(todo, bestModel, pq);
 			step++;
 		}
-	}
-
-	public Lattice getLattice() {
-		return lattice;
 	}
 
 }

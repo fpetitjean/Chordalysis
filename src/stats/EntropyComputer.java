@@ -45,11 +45,32 @@ public class EntropyComputer {
 	 *            number of lines in the database
 	 * @param lattice
 	 *            associated lattice
+	 *            @deprecated
 	 */
 	public EntropyComputer(int nbInstances, Lattice lattice) {
 		this.lookup = new HashMap<BitSet, Double>();
 		this.lattice = lattice;
 		this.nbInstances = nbInstances;
+		lookup.put(new BitSet(lattice.getNbVariables()), 0.0);
+		this.partialEntropy = new double[this.nbInstances + 1];
+		double lnN = log(nbInstances);
+		partialEntropy[0] = 0.0;
+		for (int i = 1; i < partialEntropy.length; i++) {
+			partialEntropy[i] = i * (log(i) - lnN);
+		}
+		nbCellsEverParsed = 0;
+	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param lattice
+	 *            associated lattice
+	 */
+	public EntropyComputer(Lattice lattice) {
+		this.lookup = new HashMap<BitSet, Double>();
+		this.lattice = lattice;
+		this.nbInstances = this.lattice.getNbInstances();
 		lookup.put(new BitSet(lattice.getNbVariables()), 0.0);
 		this.partialEntropy = new double[this.nbInstances + 1];
 		double lnN = log(nbInstances);

@@ -25,9 +25,15 @@ import stats.MessageLengthFactorialComputer;
 public class GraphActionScorerMML extends GraphActionScorer {
 	
 	MessageLengthFactorialComputer computer;
+	@Deprecated
 	public GraphActionScorerMML(int nbInstances,MessageLengthFactorialComputer computer){
 		this.nbInstances = nbInstances;
 		this.computer = computer;
+	}
+	
+	public GraphActionScorerMML(MessageLengthFactorialComputer computer){
+		this.computer = computer;
+		this.nbInstances = computer.getNbInstances();
 	}
 
 	@Override

@@ -28,10 +28,17 @@ import model.ScoredGraphAction;
 public class GraphActionScorerPValue extends GraphActionScorer {
 	
 	EntropyComputer entropyComputer;
+	@Deprecated
 	public GraphActionScorerPValue(int nbInstances,EntropyComputer entropyComputer){
-		this.nbInstances = nbInstances;
 		this.entropyComputer = entropyComputer;
+		this.nbInstances = nbInstances;
 	}
+	
+	public GraphActionScorerPValue(EntropyComputer entropyComputer){
+		this.entropyComputer = entropyComputer;
+		this.nbInstances = this.entropyComputer.getNbInstances();
+	}
+
 
 	@Override
 	public ScoredGraphAction scoreEdge(DecomposableModel model, GraphAction action) {
