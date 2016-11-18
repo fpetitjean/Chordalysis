@@ -17,19 +17,10 @@
  ******************************************************************************/
 package explorer;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import lattice.Lattice;
-import model.DecomposableModel;
-import model.GraphAction;
 import model.ScoredGraphAction;
 import stats.MessageLengthFactorialComputer;
-import stats.MyPriorityQueue;
 import stats.scorer.GraphActionScorer;
 import stats.scorer.GraphActionScorerMML;
-import weka.core.Instances;
-import weka.core.converters.ArffLoader.ArffReader;
 
 /**
  * This class searches a statistically significant decomposable model to explain
