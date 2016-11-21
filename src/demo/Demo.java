@@ -26,49 +26,55 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
 
-import explorer.ChordalysisModellingSMT;
-import model.DecomposableModel;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.model.DecomposableModel;
+import extra.PrintableModel;
+import loader.LoadWekaInstances;
+
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 
 public class Demo {
 
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException {
-		
-		CSVLoader loader = new CSVLoader();
-		System.out.println("Downloading dataset...");
-		URL oracle = new URL("http://repository.seasr.org/Datasets/UCI/csv/mushroom.csv");
-		File csvFile = File.createTempFile("data-", ".csv");
-        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
-        PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(csvFile))); 
-	    String inputLine;
-	    while ((inputLine = in.readLine()) != null){
-	            out.println(inputLine);
-	    }
-	    in.close();
-	    out.close();
-	    System.out.println("Dataset written to: "+csvFile.getAbsolutePath());
-		
-		loader.setFile(csvFile);
-		loader.setNominalAttributes("first-last");
-		Instances instances = loader.getDataSet();
-		String[] variablesNames = new String[instances.numAttributes()];
-		for (int i = 0; i < variablesNames.length; i++) {
-			variablesNames[i] = instances.attribute(i).name();
-		}
-		
-		ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(0.05);
-		
-		System.out.println("Learning...");
-		modeller.buildModel(instances);
-		DecomposableModel bestModel = modeller.getModel();
-		System.out.println("The model selected is:");
-		System.out.println(bestModel.toString(variablesNames));
-		bestModel.display(variablesNames);
+  /**
+   * @param args
+   * @throws IOException 
+   */
+  public static void main(String[] args) throws IOException {
 
-	}
+    CSVLoader loader = new CSVLoader();
+    System.out.println("Downloading dataset...");
+    URL oracle = new URL("http://repository.seasr.org/Datasets/UCI/csv/mushroom.csv");
+    File csvFile = File.createTempFile("data-", ".csv");
+    BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+    PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(csvFile))); 
+    String inputLine;
+    while ((inputLine = in.readLine()) != null){
+      out.println(inputLine);
+    }
+    in.close();
+    out.close();
+    System.out.println("Dataset written to: "+csvFile.getAbsolutePath());
+
+    loader.setFile(csvFile);
+    loader.setNominalAttributes("first-last");
+    Instances instances = loader.getDataSet();
+    String[] variablesNames = new String[instances.numAttributes()];
+    for (int i = 0; i < variablesNames.length; i++) {
+      variablesNames[i] = instances.attribute(i).name();
+    }
+    
+    ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+    ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, 0.05);
+
+    System.out.println("Learning...");
+    modeller.buildModel();
+    DecomposableModel bestModel = modeller.getModel();
+    System.out.println("The model selected is:");
+    System.out.println(bestModel.toString(variablesNames));
+    
+    PrintableModel.display(bestModel, variablesNames);
+
+  }
 }

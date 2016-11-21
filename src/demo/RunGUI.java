@@ -24,8 +24,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import explorer.ChordalysisModellingSMT;
-import model.DecomposableModel;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.model.DecomposableModel;
+import extra.PrintableModel;
+import loader.LoadWekaInstances;
+
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 
@@ -63,12 +67,14 @@ public class RunGUI {
 				variablesNames[i] = instances.attribute(i).name();
 			}
 			
-			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
-			modeller.buildModel(instances);
+			ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, pValue);
+			modeller.buildModel();
+			
 			DecomposableModel bestModel = modeller.getModel();
 			System.out.println("The model selected is:");
 			System.out.println(bestModel.toString(variablesNames));
-			bestModel.display(variablesNames);
+			PrintableModel.display(bestModel, variablesNames);
 		} catch (IOException e) {
 			System.out.println("I/O error while loading csv file");
 			e.printStackTrace();

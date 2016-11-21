@@ -19,8 +19,10 @@ package demo;
 import java.io.File;
 import java.io.IOException;
 
-import explorer.ChordalysisModellingSMT;
-import model.DecomposableModel;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.model.DecomposableModel;
+import loader.LoadWekaInstances;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 /**
@@ -75,8 +77,10 @@ public class RunDot {
 			}
 			long start = System.currentTimeMillis();
 			
-			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
-			modeller.buildModel(instances);
+			ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, pValue);
+			modeller.buildModel();
+			
 			DecomposableModel bestModel = modeller.getModel();
 
 			System.out.println("The model selected is: (selected in " + (System.currentTimeMillis() - start) + "ms)");

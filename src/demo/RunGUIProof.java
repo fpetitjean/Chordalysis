@@ -26,8 +26,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import explorer.ChordalysisModellingSMT;
-import model.DecomposableModel;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.model.DecomposableModel;
+import extra.PrintableModel;
+import loader.LoadWekaInstances;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
@@ -143,8 +146,10 @@ public class RunGUIProof {
 				}
 			}
 
-			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
-			modeller.buildModel(instances);
+			ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, pValue);
+			modeller.buildModel();
+			
 			DecomposableModel bestModel = modeller.getModel();
 			JOptionPane.showMessageDialog(null,new JTextArea("Chordalysis has now finished analysing your data. "
 					+ "\nIf you found something useful, please reference Chordalysis as"
@@ -156,11 +161,11 @@ public class RunGUIProof {
 			if(graphFile.getName().endsWith("dot")){
 				bestModel.exportDOT(graphFile, variablesNames);
 			}else if(graphFile.getName().endsWith("png")){
-				ImageIO.write(bestModel.getImage(variablesNames),"png", graphFile);
+				ImageIO.write(PrintableModel.getImage(bestModel, variablesNames),"png", graphFile);
 			}else if(graphFile.getName().endsWith("dne")){
-				bestModel.exportBNNetica(graphFile, variablesNames,outcomes);
+				PrintableModel.exportBNNetica(graphFile, bestModel, variablesNames, outcomes);
 				bestModel.exportDOT(new File(graphFile.getAbsolutePath()+".dot"), variablesNames);
-				ImageIO.write(bestModel.getImage(variablesNames),"png", new File(graphFile.getAbsolutePath()+".png"));
+				ImageIO.write(PrintableModel.getImage(bestModel, variablesNames),"png", new File(graphFile.getAbsolutePath()+".png"));
 				bestModel.saveAssociations(variablesNames, new File(graphFile.getAbsolutePath()+".csv"));
 			}else{
 				bestModel.saveAssociations(variablesNames, graphFile);

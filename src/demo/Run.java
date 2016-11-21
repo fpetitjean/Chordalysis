@@ -21,8 +21,12 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import explorer.ChordalysisModellingSMT;
-import model.DecomposableModel;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.model.DecomposableModel;
+import loader.LoadWekaInstances;
+import extra.PrintableModel;
+
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 /**
@@ -92,14 +96,17 @@ public class Run {
 			}
 			long start = System.currentTimeMillis();
 			
-			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(pValue);
-			modeller.buildModel(instances);
+			ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+			ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, pValue);
+			modeller.buildModel();
 			DecomposableModel bestModel = modeller.getModel();
 
-			if(gui)bestModel.display(variablesNames);
+			if(gui){PrintableModel.display(bestModel, variablesNames);}
+			
 			System.out.println("The model selected is: (selected in " + (System.currentTimeMillis() - start) + "ms)");
 			System.out.println(bestModel.toString(variablesNames));
-			ImageIO.write(bestModel.getImage(variablesNames),extension, outPutFile);
+			
+			ImageIO.write(PrintableModel.getImage(bestModel, variablesNames),extension, outPutFile);
 		} catch (IOException e) {
 			System.out.println("I/O error while loading csv file");
 			e.printStackTrace();

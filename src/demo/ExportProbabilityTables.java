@@ -29,10 +29,12 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
-import explorer.ChordalysisModellingSMT;
-import lattice.Lattice;
-import lattice.LatticeNode;
-import model.DecomposableModel;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.lattice.Lattice;
+import core.lattice.LatticeNode;
+import core.model.DecomposableModel;
+import loader.LoadWekaInstances;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 
@@ -76,10 +78,11 @@ public class ExportProbabilityTables {
 
 	}
 
-	ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(0.05);
+	ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+	ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, 0.05);
 
 	System.out.println("Learning...");
-	modeller.buildModel(instances);
+	modeller.buildModel();
 	DecomposableModel bestModel = modeller.getModel();
 	// bestModel.display(variablesNames);
 	System.out.println("The model selected is:");

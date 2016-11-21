@@ -27,9 +27,11 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Arrays;
 
-import explorer.ChordalysisModellingSMT;
-import model.DecomposableModel;
-import model.Inference;
+import core.explorer.ChordalysisModeller;
+import core.explorer.ChordalysisModellingSMT;
+import core.model.DecomposableModel;
+import core.model.Inference;
+import loader.LoadWekaInstances;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 
@@ -72,11 +74,12 @@ public class ExportBNDSC {
 	    System.out.println("Dom(" + variablesNames[i] + ") = " + Arrays.toString(outcomes[i]));
 
 	}
-
-	ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(0.05);
+	
+	ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
+	ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, 0.05);
 
 	System.out.println("Learning...");
-	modeller.buildModel(instances);
+	modeller.buildModel();
 	DecomposableModel bestModel = modeller.getModel();
 	
 	Inference inference = new Inference(bestModel, variablesNames, outcomes);
