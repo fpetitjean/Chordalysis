@@ -17,7 +17,7 @@ When using this repository, please cite:
   title = {A multiple test correction for streams and cascades of statistical hypothesis tests},
   booktitle = {ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
   year = 2016,
-  pages = {1--10}
+  pages = {1225--1264}
 }
 
 @INPROCEEDINGS{Petitjean2015-SDM,
