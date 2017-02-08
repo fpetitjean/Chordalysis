@@ -30,10 +30,20 @@ import core.explorer.ChordalysisModeller;
 import core.explorer.ChordalysisModellingSMT;
 import core.model.DecomposableModel;
 import extra.PrintableModel;
+import loader.LoadArrays;
 import loader.LoadWekaInstances;
 
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
+import core.explorer.*;
+import core.graph.ChordalGraph;
+import core.model.DecomposableModel;
+
+
+
+import java.util.BitSet;
+import java.util.List;
+
 
 public class Demo {
 
@@ -65,6 +75,7 @@ public class Demo {
       variablesNames[i] = instances.attribute(i).name();
     }
     
+      
     ChordalysisModeller.Data mydata = LoadWekaInstances.makeModelData(instances);
     ChordalysisModellingSMT modeller = new ChordalysisModellingSMT(mydata, 0.05);
 
@@ -75,6 +86,36 @@ public class Demo {
     System.out.println(bestModel.toString(variablesNames));
     
     PrintableModel.display(bestModel, variablesNames);
-
+    
   }
+  
+  
+  
+  private static String getFormulaString(DecomposableModel model){
+	    // Access the graph
+	    ChordalGraph graph = model.graph;
+	    List<BitSet> cliques = graph.getCliquesBFS();
+
+	    // Init string
+	    String res = "~";
+
+	    // For each cliques
+	    for (BitSet clique : cliques) {
+	      // Add all item
+	      for (int var = clique.nextSetBit(0); var >= 0; var = clique.nextSetBit(var + 1)) { res += var + "*"; }
+	       // remove last "*"
+	      if(res.endsWith("*")){res = res.substring(0, res.length()-1);}
+	      res += "+";
+	    }
+
+	    // remove last "+"
+	    if(res.endsWith("+")){res = res.substring(0, res.length()-1);}
+
+	    return res;
+	  }
+  
+  
+  
+  
+  
 }

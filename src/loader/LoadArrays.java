@@ -13,7 +13,7 @@ public final class LoadArrays {
    * @param nValuesForAttribute number of values per attribute
    * @param data (first dim is line no, second is variable number, content is value no for variable k in [0,nValuesForAttribute[k])
    */
-  public static ChordalysisModeller.Data makeModelData(int[]nValuesForAttribute,int[][] data) {
+  public static ChordalysisModeller.Data makeModelData(int[]nValuesForAttribute, int[][] data) {
 
     // Access the size:
     int nbInstances   = data.length;
