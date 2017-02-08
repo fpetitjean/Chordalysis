@@ -51,5 +51,4 @@ public final class LoadArrays {
         new DecomposableModel(variables, nValuesForAttribute),
         new Lattice(nbVariables, nbInstances, nValuesForAttribute, convData) );
   }
-
 }
