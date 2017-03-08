@@ -44,6 +44,10 @@ When using this repository, please cite:
   pages = {597--606}
 }
 ```
+# Chordalysis for R
+We now have an R interface for Chordalysis, see:
+* CRAN: https://cran.r-project.org/web/packages/ChoR/index.html
+* GitHub: https://github.com/HerrmannM/Monash-ChoR
 
 # Support
 YourKit is supporting Chordalysis open source project with its full-featured Java Profiler.
