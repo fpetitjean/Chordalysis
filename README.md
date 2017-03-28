@@ -17,7 +17,7 @@ When using this repository, please cite:
   title = {A multiple test correction for streams and cascades of statistical hypothesis tests},
   booktitle = {ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
   year = 2016,
-  pages = {1--10}
+  pages = {1225--1264}
 }
 
 @INPROCEEDINGS{Petitjean2015-SDM,
@@ -44,6 +44,10 @@ When using this repository, please cite:
   pages = {597--606}
 }
 ```
+# Chordalysis for R
+We now have an R interface for Chordalysis, see:
+* CRAN: https://cran.r-project.org/web/packages/ChoR/index.html
+* GitHub: https://github.com/HerrmannM/Monash-ChoR
 
 # Support
 YourKit is supporting Chordalysis open source project with its full-featured Java Profiler.

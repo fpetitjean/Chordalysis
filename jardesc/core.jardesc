@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
-    <jar path="Chordalysis/outjar/core.jar"/>
-    <options buildIfNeeded="true" compress="true" descriptionLocation="/Chordalysis/jardesc/core.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <jar path="Chordalysis.git/outjar/core.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/Chordalysis.git/jardesc/core.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
     <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
@@ -11,13 +11,13 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
-        <javaElement handleIdentifier="=Chordalysis/src&lt;loader{LoadArrays.java"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.graph"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.explorer"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.model"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.lattice"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.tools"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.stats"/>
-        <javaElement handleIdentifier="=Chordalysis/src&lt;core.stats.scorer"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.stats.scorer"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.model"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;loader{LoadArrays.java"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.tools"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.graph"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.explorer"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.lattice"/>
+        <javaElement handleIdentifier="=Chordalysis.git/src&lt;core.stats"/>
     </selectedElements>
 </jardesc>
