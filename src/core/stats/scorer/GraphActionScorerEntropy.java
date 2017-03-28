@@ -27,10 +27,19 @@ public class GraphActionScorerEntropy extends GraphActionScorer {
 	int nbInstances;
 	EntropyComputer entropyComputer;
 	int maxK;
+	boolean normaliseByNumberParameters;
+	
 	public GraphActionScorerEntropy(EntropyComputer entropyComputer, int maxK){
 		this.entropyComputer = entropyComputer;
 		this.nbInstances = entropyComputer.getNbInstances();
 		this.maxK = maxK;
+		this.normaliseByNumberParameters = false;
+	}
+	public GraphActionScorerEntropy(EntropyComputer entropyComputer, int maxK,boolean normalizeByNumberParameters){
+		this.entropyComputer = entropyComputer;
+		this.nbInstances = entropyComputer.getNbInstances();
+		this.maxK = maxK;
+		this.normaliseByNumberParameters = normalizeByNumberParameters;
 	}
 
 	@Override
@@ -40,7 +49,12 @@ public class GraphActionScorerEntropy extends GraphActionScorer {
 		if(treeWidthIfAdding>maxK){
 			score=Double.POSITIVE_INFINITY;
 		}else{
-			score = 1.0/model.entropyDiffIfAdding(action.getV1(),action.getV2(), entropyComputer);
+			if(normaliseByNumberParameters){
+				long dfDiff = model.nbParametersDiffIfAdding(action.getV1(),action.getV2());
+				score = dfDiff/model.entropyDiffIfAdding(action.getV1(),action.getV2(), entropyComputer);
+			}else{
+				score = 1.0/model.entropyDiffIfAdding(action.getV1(),action.getV2(), entropyComputer);
+			}
 		}
 		ScoredGraphAction scoredAction = new ScoredGraphAction(action.getType(),action.getV1(), action.getV2(), score);
 		return scoredAction;

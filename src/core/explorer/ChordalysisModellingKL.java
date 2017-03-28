@@ -33,16 +33,37 @@ import core.stats.scorer.GraphActionScorerEntropy;
 public class ChordalysisModellingKL extends ChordalysisModeller {
 
 	int maxK;
+	boolean normaliseByNumberParameters;
 
+	/**
+	 * Constructor
+	 * @param data the data
+	 * @param maxK the size of the maximum clique to be created
+	 */
 	public ChordalysisModellingKL(Data data, int maxK) {
 		super(data);
 		this.maxK = maxK;
+		this.normaliseByNumberParameters = false;
 	}
+	
+	/**
+	 * Constructor
+	 * @param data the data
+	 * @param maxK the size of the maximum clique to be created
+	 * @param normaliseByNumberParameters decides if the difference in entropy should be normalised by the difference in number of parameters
+	 */
+	public ChordalysisModellingKL(Data data, int maxK,boolean normaliseByNumberParameters) {
+		super(data);
+		this.maxK = maxK;
+		this.normaliseByNumberParameters = normaliseByNumberParameters;
+	}
+	
+	
 
 	@Override
 	protected GraphActionScorer initScorer() {
 		EntropyComputer entropyComputer = new EntropyComputer(this.lattice);
-		return new GraphActionScorerEntropy(entropyComputer, maxK);
+		return new GraphActionScorerEntropy(entropyComputer, maxK,normaliseByNumberParameters);
 	}
 
 	@Override
