@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2014 Francois Petitjean
+ * Copyright (C) 2014 Joan Capdevila Pujol
  * 
  * This file is part of Chordalysis.
  * 
@@ -22,7 +22,6 @@ import core.model.DecomposableModel;
 import core.model.GraphAction;
 import core.model.ScoredGraphAction;
 import core.stats.EntropyComputer;
-import core.stats.LoglikeComputer;
 
 public class GraphActionScorerBIC extends GraphActionScorer {
 	int nbInstances;

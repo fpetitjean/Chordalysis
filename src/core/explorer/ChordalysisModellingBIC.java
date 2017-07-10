@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017 Francois Petitjean
+ * Copyright (C) 2017 Joan Capdevila Pujol
  * 
  * This file is part of Chordalysis.
  * 
@@ -17,16 +17,10 @@
  ******************************************************************************/
 package core.explorer;
 
-import core.model.GraphAction;
 import core.model.ScoredGraphAction;
 import core.stats.EntropyComputer;
-import core.stats.LoglikeComputer;
 import core.stats.scorer.GraphActionScorer;
 import core.stats.scorer.GraphActionScorerBIC;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * This class searches a decomposable model to explain a dataset using
