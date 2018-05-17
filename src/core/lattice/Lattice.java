@@ -52,6 +52,17 @@ public class Lattice {
     }
   }
 
+  public Lattice(Lattice lat){
+    this.nbVariables = lat.getNbVariables();
+    this.nbInstances = lat.getNbInstances();
+    this.singleNodes = new LatticeNode[nbVariables];
+    this.all         = new LatticeNode(this, lat.getnbValuesForAttribute());
+    for (int a = 0; a < nbVariables; a++) {
+      singleNodes[a] = new LatticeNode(this, lat.getSingleNodes()[a]);
+    }
+
+  }
+
   // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
   // Getters
   // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -65,6 +76,9 @@ public class Lattice {
 
   public LatticeNode[] getSingleNodes(){return this.singleNodes;}
 
+  public int[] getnbValuesForAttribute(){
+    return this.all.dimensionsForVariables;
+  }
   // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
   // Methods
   // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---

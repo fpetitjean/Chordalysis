@@ -116,6 +116,19 @@ public class LatticeNode implements Comparable<LatticeNode> {
     records = null;
   }
 
+  public LatticeNode(Lattice lattice, LatticeNode node){
+    this.lattice = lattice;
+    this.variablesNumbers = node.variablesNumbers.clone();
+    this.dimensionsForVariables = node.dimensionsForVariables.clone();
+    this.records = node.records.clone();
+    this.nbCells = node.getNbCells();
+    this.children = new TreeSet<LatticeNode>();
+
+    for(LatticeNode child : node.children){
+      this.children.add(new LatticeNode(lattice, child));
+    }
+  }
+
   /**
    * Computes the intersections of the TIDset for every cell of the matrix, as
    * well as the count (size of the intersection) that will be used for the

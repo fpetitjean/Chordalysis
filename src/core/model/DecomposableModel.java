@@ -37,6 +37,7 @@ import org.jgrapht.graph.DefaultEdge;
 import core.graph.ChordalGraph;
 import core.graph.CliqueGraphEdge;
 import core.model.GraphAction.ActionType;
+import core.stats.RegretComputer;
 import core.stats.EntropyComputer;
 import core.stats.MessageLengthFactorialComputer;
 import core.stats.MyPriorityQueue;
@@ -202,6 +203,81 @@ public class DecomposableModel {
   public Double entropyDiffIfAdding(Integer a, Integer b,
       EntropyComputer computer) {
     return entropyDiffIfAdding(a, b, computer, false);
+  }
+
+  public Double regretDiffIfAdding(Integer a, Integer b,
+     RegretComputer computer) {
+    return regretDiffIfAdding(a, b, computer, false);
+  }
+  /**
+   * Compute the difference in the regret from this model, to one that would
+   * add vertex1 and vertex2 to it
+   * 
+   * @param a
+   * @param b
+   * @param computer
+   * @return
+   */
+  
+  public Double regretDiffIfAdding(Integer a, Integer b, RegretComputer computer, boolean verbose) {
+    // System.out.println("computing actual entropy");
+    BitSet Sab = graph.getSeparator(a, b);
+    BitSet Sabua = (BitSet) Sab.clone();
+    BitSet Sabub = (BitSet) Sab.clone();
+    BitSet Sabuaub = (BitSet) Sab.clone();
+    Sabua.set(a);
+    Sabub.set(b);
+    Sabuaub.set(a);
+    Sabuaub.set(b);
+
+    Double regret = 0.0;
+    Double tmp;
+
+    // Sab
+    tmp = computer.computeRegret(Sab);
+    if (tmp == null) {
+      regret = null;
+      return regret;
+    } else {
+      regret += tmp;
+    }
+    if (verbose)
+      System.out.println("-" + Sab + ":" + tmp);
+
+    // Sab + a
+    tmp = computer.computeRegret(Sabua);
+    if (tmp == null) {
+      regret = null;
+      return regret;
+    } else {
+      regret -= tmp;
+    }
+    if (verbose)
+      System.out.println("+" + Sabua + ":" + tmp);
+
+    // Sab + b
+    tmp = computer.computeRegret(Sabub);
+    if (tmp == null) {
+      regret = null;
+      return regret;
+    } else {
+      regret -= tmp;
+    }
+    if (verbose)
+      System.out.println("+" + Sabub + ":" + tmp);
+
+    // Sab + a + b
+    tmp = computer.computeRegret(Sabuaub);
+    if (tmp == null) {
+      regret = null;
+      return regret;
+    } else {
+      regret += tmp;
+    }
+    if (verbose)
+      System.out.println("-" + Sabuaub + ":" + tmp);
+
+    return regret;
   }
 
   /**

@@ -132,4 +132,9 @@ public class EntropyComputer {
     return lookup.size();
   }
 
+  public Object clone(){
+    return new EntropyComputer(new Lattice(this.lattice));
+  }
+
+
 }
