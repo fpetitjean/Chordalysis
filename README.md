@@ -4,7 +4,8 @@ More information about the research papers detailing the theory behind Chordalys
 
 # Underlying research and scientific papers
 
-This code is supporting 4 research papers:
+This code is supporting 5 research papers:
+* Behaviormetrika 2018: Experiments with Learning Graphical Models on Text
 * KDD 2016: A multiple test correction for streams and cascades of statistical hypothesis tests
 * SDM 2015: Scaling log-linear analysis to datasets with thousands of variables
 * ICDM 2014: A statistically efficient and scalable method for log-linear analysis of high-dimensional data
@@ -12,6 +13,18 @@ This code is supporting 4 research papers:
 
 When using this repository, please cite:
 ```
+@ARTICLE{Capdevila2018-Behaviormetrika,
+  author = {Capdevila, Joan and Zhao, He and Petitjean, Francois and Buntine, Wray},
+  title = {Experiments with learning graphical models on text},
+  journal = {Behaviormetrika},
+  year = {2018},
+  month = {May},
+  day = {08},
+  doi = {10.1007/s41237-018-0050-3},
+  url = {https://doi.org/10.1007/s41237-018-0050-3}
+}
+
+
 @INPROCEEDINGS{Petitjean2016-KDD,
   author = {Webb, Geoffrey I. and Petitjean, Francois},
   title = {A multiple test correction for streams and cascades of statistical hypothesis tests},
