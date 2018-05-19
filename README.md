@@ -24,7 +24,6 @@ When using this repository, please cite:
   url = {https://doi.org/10.1007/s41237-018-0050-3}
 }
 
-
 @INPROCEEDINGS{Petitjean2016-KDD,
   author = {Webb, Geoffrey I. and Petitjean, Francois},
   title = {A multiple test correction for streams and cascades of statistical hypothesis tests},
